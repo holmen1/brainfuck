@@ -1,0 +1,59 @@
+# Compiled executables
+bf
+bfc
+hello
+*.out
+a.out
+
+# Object files
+*.o
+*.obj
+
+# Assembly output
+*.asm
+*.s
+
+# Generated C code
+*_generated.c
+
+# Core dumps
+core
+core.*
+vgcore.*
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Editor and IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Build directories
+build/
+bin/
+obj/
+
+# Test outputs
+tests/output/
+*.log
+
+# Profiling and benchmarking
+*.prof
+*.perf
+perf.data
+perf.data.old
+gmon.out
+
+# Dependencies
+*.d
+
+# Temporary files
+*.tmp
+.temp/
