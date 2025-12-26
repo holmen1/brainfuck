@@ -29,6 +29,16 @@ Working document for tracking progress, decisions, and lessons learned while imp
   - Switch statement for each command
   - All 6 simple commands working: >, <, +, -, ., ,
   - Tests extended to 4 execution tests - all passing
+- Refactored to professional project structure
+  - Created `include/bf.h` header for constants and function declarations
+  - Updated Makefile with `-Iinclude` flag and header dependency tracking
+  - Reorganized bf.c: main() at top, helper functions below
+  - Changed from array indexing to pointer-based approach
+    - `int ptr = 0; memory[ptr]` → `unsigned char *cell = memory; *cell`
+    - More idiomatic C, better for teaching pointer arithmetic
+    - Direct mapping: `>` is `cell++`, `<` is `cell--`
+  - All tests still passing after refactoring
+
   
 **Next steps**: Implement bracket matching for loops ([ and ])
 

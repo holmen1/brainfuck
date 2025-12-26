@@ -1,14 +1,15 @@
 CC = gcc
-CFLAGS = -std=c99 -Wall -Wextra -O2
+CFLAGS = -std=c99 -Wall -Wextra -O2 -Iinclude
 
 SRCDIR = src
 BINDIR = bin
+INCDIR = include
 
 # Targets
 all: $(BINDIR)/bf
 
 # Interpreter
-$(BINDIR)/bf: $(SRCDIR)/bf.c | $(BINDIR)
+$(BINDIR)/bf: $(SRCDIR)/bf.c $(INCDIR)/bf.h | $(BINDIR)
 	$(CC) $(CFLAGS) $< -o $@
 
 # Create bin directory

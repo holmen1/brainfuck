@@ -6,9 +6,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "bf.h"
 
-#define MEMORY_SIZE 30000
-#define PROGRAM_SIZE 100000
+int main(int argc, char *argv[]) {
+  if (argc < 2) {
+    fprintf(stderr, "Usage: %s <filename.bf>\n", argv[0]);
+    return 1;
+  }
+
+  // Read Brainfuck source file
+  char program[PROGRAM_SIZE];
+  int program_length = read_program(argv[1], program, PROGRAM_SIZE);
+
+  if (program_length < 0) {
+    return 1; // Error message already printed by read_program()
+  }
+
+  execute_program(program, program_length);
+
+  return (program_length > 0) ? 0 : 1;
+}
 
 /**
  * Read Brainfuck source file into buffer
@@ -54,7 +71,7 @@ int read_program(const char *filename, char *buffer, int max_size) {
  */
 void execute_program(const char *program, int program_length) {
   unsigned char memory[MEMORY_SIZE] = {0};
-  int ptr = 0; /* data pointer */
+  unsigned char *cell = memory;  /* pointer to current cell */
 
   /* Main execution loop */
   for (int pc = 0; pc < program_length; pc++) {
@@ -62,45 +79,26 @@ void execute_program(const char *program, int program_length) {
 
     switch (cmd) {
     case '>':
-      ptr++;
+      cell++;
       break;
     case '<':
-      ptr--;
+      cell--;
       break;
     case '+':
-      memory[ptr]++;
+      (*cell)++;
       break;
     case '-':
-      memory[ptr]--;
+      (*cell)--;
       break;
     case '.':
-      putchar(memory[ptr]);
+      putchar(*cell);
       break;
     case ',':
-      memory[ptr] = getchar();
+      *cell = getchar();
       break;
     default:
       /* ignore other characters */
       break;
     }
   }
-}
-
-int main(int argc, char *argv[]) {
-  if (argc < 2) {
-    fprintf(stderr, "Usage: %s <filename.bf>\n", argv[0]);
-    return 1;
-  }
-
-  // Read Brainfuck source file
-  char program[PROGRAM_SIZE];
-  int program_length = read_program(argv[1], program, PROGRAM_SIZE);
-
-  if (program_length < 0) {
-    return 1; // Error message already printed by read_program()
-  }
-
-  execute_program(program, program_length);
-
-  return (program_length > 0) ? 0 : 1;
 }

@@ -18,8 +18,8 @@ The brainfuck interpreter knows the following instructions:
 
 ```bash
 $ make
-mkdir -p bin
-gcc -std=c99 -Wall -Wextra -O2 src/bf.c -o bin/bf
+gcc -std=c99 -Wall -Wextra -O2 -Iinclude src/bf.c -o bin/bf
+$ make test
 Running tests...
 === Brainfuck Test Suite ===
 
