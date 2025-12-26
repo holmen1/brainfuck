@@ -23,8 +23,14 @@ Working document for tracking progress, decisions, and lessons learned while imp
   - Tests use && || operators instead of if statements for conciseness
   - 3 tests: valid file, missing file, no arguments
   - All tests passing
-
-**Next steps**: Implement main execution loop and simple commands (>, <, +, -, ., ,)
+- Implemented main execution loop and simple commands
+  - Added `execute_program()` function (separate from main)
+  - Main loop iterates through program counter (pc)
+  - Switch statement for each command
+  - All 6 simple commands working: >, <, +, -, ., ,
+  - Tests extended to 4 execution tests - all passing
+  
+**Next steps**: Implement bracket matching for loops ([ and ])
 
 
 ## Phase 2: Interpreter Implementation
@@ -59,9 +65,25 @@ TODO: Document your decisions:
 ```
 
 ### Main Execution Loop
-TODO: Describe your interpreter's main loop:
-- Switch statement vs function pointers vs other?
-- How many instructions per second?
+**Chosen approach**: Switch statement in single loop
+
+**Implementation details**:
+- Loop counter: `pc` (program counter) iterates 0 to program_length
+- Data pointer: `ptr` tracks current memory cell
+- Memory: 30,000 byte array initialized to zero
+
+**Command implementation**:
+```c
+switch (cmd) {
+    case '>': ptr++; break;              /* move right */
+    case '<': ptr--; break;              /* move left */
+    case '+': memory[ptr]++; break;      /* increment cell */
+    case '-': memory[ptr]--; break;      /* decrement cell */
+    case '.': putchar(memory[ptr]); break;  /* output */
+    case ',': memory[ptr] = getchar(); break;  /* input */
+    default: /* ignore non-commands */
+}
+```
 
 **Performance notes**:
 - Simple programs: ___ instructions/sec

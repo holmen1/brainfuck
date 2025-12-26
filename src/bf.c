@@ -13,10 +13,13 @@
 /**
  * Read Brainfuck source file into buffer
  * 
- * @param filename Path to .bf source file
- * @param buffer   Pre-allocated buffer to store program
- * @param max_size Maximum bytes to read
- * @return Number of bytes read, or -1 on error
+ * Arguments:
+ *   filename - Path to .bf source file
+ *   buffer   - Pre-allocated buffer to store program
+ *   max_size - Maximum bytes to read
+ * 
+ * Returns:
+ *   Number of bytes read, or -1 on error
  */
 int read_program(const char *filename, char *buffer, int max_size) {
     FILE *file = fopen(filename, "r");
@@ -42,6 +45,47 @@ int read_program(const char *filename, char *buffer, int max_size) {
     return length;
 }
 
+/*
+ * Execute Brainfuck program
+ * 
+ * Arguments:
+ *   program        - Brainfuck source code
+ *   program_length - Number of instructions
+ */
+void execute_program(const char *program, int program_length) {
+    unsigned char memory[MEMORY_SIZE] = {0};
+    int ptr = 0;  /* data pointer */
+    
+    /* Main execution loop */
+    for (int pc = 0; pc < program_length; pc++) {
+        char cmd = program[pc];
+        
+        switch (cmd) {
+            case '>':
+                ptr++;
+                break;
+            case '<':
+                ptr--;
+                break;
+            case '+':
+                memory[ptr]++;
+                break;
+            case '-':
+                memory[ptr]--;
+                break;
+            case '.':
+                putchar(memory[ptr]);
+                break;
+            case ',':
+                memory[ptr] = getchar();
+                break;
+            default:
+                /* ignore other characters */
+                break;
+        }
+    }
+}
+
 int main(int argc, char *argv[]) {
     if (argc < 2) {
         fprintf(stderr, "Usage: %s <filename.bf>\n", argv[0]);
@@ -55,6 +99,8 @@ int main(int argc, char *argv[]) {
     if (program_length < 0) {
         return 1;  // Error message already printed by read_program()
     }
+
+    execute_program(program, program_length);
     
     return (program_length > 0) ? 0 : 1;
 }
