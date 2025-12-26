@@ -39,28 +39,68 @@ Working document for tracking progress, decisions, and lessons learned while imp
     - Direct mapping: `>` is `cell++`, `<` is `cell--`
   - All tests still passing after refactoring
 
-  
-**Next steps**: Implement bracket matching for loops ([ and ])
+- Implemented bracket matching for loops ([ and ])
+  - Chosen approach: **depth-counting scan during execution** (no preprocessing)
+  - `find_matching_bracket(program, pos, direction)` function
+    - `direction`: +1 for forward scan (at `[`), -1 for backward scan (at `]`)
+    - Starts with `depth = 1` (already inside one bracket pair)
+    - Scans through program incrementing/decrementing depth at brackets
+    - Returns position where `depth == 0` (matching bracket found)
+  - Time: O(n) per bracket jump in worst case
+  - Space: O(1) - no stack or preprocessing arrays needed
+  - Loop behavior:
+    - At `[`: if cell is 0, jump forward past matching `]`
+    - At `]`: if cell is non-zero, jump backward to matching `[`
+  - Test suite extended to 7 tests:
+    - Test 5: Simple loop `++[>+<-]>.` (moves value between cells)
+    - Test 6: Loop multiplication `+++[>++<-]>.` (3×2=6)
+    - Test 7: Nested loops `++[>++[>++<-]<-]>>.` (2×2×2=8)
+  - All tests passing
+
+**Next steps**: Error handling for mismatched brackets (currently assumes valid programs)
 
 
 ## Phase 2: Interpreter Implementation
 
 ### Bracket Matching Strategy
-**Chosen approach**: (stack-based / pre-processing / other)
+**Chosen approach**: Depth-counting scan during execution (no preprocessing)
 
-TODO: Document your implementation:
-- How did you handle nested brackets?
-- Data structure used (array, linked list, etc.)
-- Time complexity: O(?)
-- Space complexity: O(?)
+**How nested brackets are handled**:
+- Each loop maintains a depth counter starting at 1
+- When encountering same bracket type: increment depth
+- When encountering opposite bracket: decrement depth
+- Match found when depth reaches 0
+
+**Algorithm**:
+- Time complexity: O(n) per bracket jump (worst case)
+- Space complexity: O(1) (no additional data structures)
+- Trade-off: Simple code, but repeated scanning for frequently-executed loops
 
 **Challenges encountered**:
-- TODO: What edge cases did you find?
-- TODO: How did you debug mismatched brackets?
+1. **Initial depth value**: Started with `depth = 0`, should be `depth = 1`
+   - We're already inside one bracket pair when scanning starts
+2. **Termination condition**: Used `depth < 0`, should be `depth == 0`
+   - Match found when balancing the initial bracket
+3. **Nested loop test design**: First attempt `++[>+[>+<<-]>-]>.` failed
+   - Inner loop modified outer loop's counter (cell[0])
+   - Lesson: Each nested loop needs independent counter in separate cells
+   - Fixed version: `++[>++[>++<-]<-]>>.` works correctly
 
 **Code snippet**:
 ```c
-// Paste your bracket matching code here
+int find_matching_bracket(const char *program, int pos, int direction) {
+    int depth = 1;  // Already inside one bracket
+    char open = (direction == 1) ? '[' : ']';
+    char close = (direction == 1) ? ']' : '[';
+    
+    pos += direction;  // Move past current bracket
+    while (depth > 0) {
+        if (program[pos] == open) depth++;
+        else if (program[pos] == close) depth--;
+        if (depth > 0) pos += direction;
+    }
+    return pos;
+}
 ```
 
 ### Memory Management

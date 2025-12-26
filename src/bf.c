@@ -96,9 +96,35 @@ void execute_program(const char *program, int program_length) {
     case ',':
       *cell = getchar();
       break;
+    case '[':
+      if (*cell == 0) {
+        pc = find_matching_bracket(program, pc, +1);
+      }
+      break;
+    case ']':
+      if (*cell != 0) {
+        pc = find_matching_bracket(program, pc, -1);
+      }
+      break;
     default:
       /* ignore other characters */
       break;
     }
   }
+}
+
+int find_matching_bracket(const char *program, int pos, int direction) {
+    int depth = 1;
+    while (1) {
+        pos += direction;
+        if (program[pos] == '[') {
+            depth += (direction == +1) ? 1 : -1;
+        } else if (program[pos] == ']') {
+            depth += (direction == +1) ? -1 : 1;
+        }
+
+        if (depth == 0) {
+            return pos;
+        }
+    }
 }

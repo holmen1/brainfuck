@@ -31,4 +31,10 @@ Test 3: Pointer movement (>+.)
 ✓ PASS (output: ASCII 1)
 Test 4: Multiple increments
 ✓ PASS (output: ASCII 95, 96)
+Test 5: Simple loop (++[>+<-]>.)
+✓ PASS (output: ASCII 2)
+Test 6: Loop multiplication (+++[>++<-]>.)
+✓ PASS (output: ASCII 6)
+Test 7: Nested loops (++[>++[>++<-]<-]>>.)
+✓ PASS (output: ASCII 8)
 ```
