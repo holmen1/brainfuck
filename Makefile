@@ -1,34 +1,27 @@
 CC = gcc
 CFLAGS = -std=c99 -Wall -Wextra -O2
-DEBUG_FLAGS = -g -O0
+
+SRCDIR = src
+BINDIR = bin
 
 # Targets
-all: bf bfc
+all: $(BINDIR)/bf
 
 # Interpreter
-bf: src/bf.c
-	$(CC) $(CFLAGS) src/bf.c -o bf
+$(BINDIR)/bf: $(SRCDIR)/bf.c | $(BINDIR)
+	$(CC) $(CFLAGS) $< -o $@
 
-# Compiler
-bfc: src/bfc.c
-	$(CC) $(CFLAGS) src/bfc.c -o bfc
-
-# Debug builds
-debug: CFLAGS = -std=c99 -Wall -Wextra $(DEBUG_FLAGS)
-debug: all
+# Create bin directory
+$(BINDIR):
+	mkdir -p $(BINDIR)
 
 # Run tests
-test: all
+test: $(BINDIR)/bf
 	@echo "Running tests..."
 	@./tests/run_tests.sh
 
-# Benchmark
-benchmark: all
-	@echo "Running benchmarks..."
-	@./benchmarks/bench.sh
-
 # Clean
 clean:
-	rm -f bf bfc *.o *.asm *.out
+	rm -rf $(BINDIR)
 
-.PHONY: all debug test benchmark clean
+.PHONY: all test clean

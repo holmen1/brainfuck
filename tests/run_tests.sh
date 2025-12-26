@@ -1,20 +1,20 @@
-#!/bin/bash
-# Test runner for Brainfuck interpreter and compiler
-
-set -e
+#!/bin/sh
+# Test runner for Brainfuck interpreter
 
 echo "=== Brainfuck Test Suite ==="
-echo
+echo ""
 
-# TODO: Add test cases here
-# Example test structure:
-# echo "Test 1: Hello World"
-# ./bf examples/hello_world.bf > output.txt
-# if diff output.txt expected/hello_world.txt; then
-#     echo "PASS"
-# else
-#     echo "FAIL"
-# fi
+# Test 1: Valid file returns success (0)
+echo "Test 1: Reading valid file (hello_world.bf)"
+./bin/bf examples/hello_world.bf > /dev/null && echo "✓ PASS" || exit 1
 
-echo "Tests not yet implemented"
-echo "Add test cases as you build the interpreter/compiler"
+# Test 2: Missing file returns error
+echo "Test 2: Missing file returns error"
+./bin/bf nonexistent.bf > /dev/null 2>&1 && exit 1 || echo "✓ PASS"
+
+# Test 3: No arguments returns error
+echo "Test 3: No arguments returns error"
+./bin/bf > /dev/null 2>&1 && exit 1 || echo "✓ PASS"
+
+echo ""
+echo "All tests passed!"

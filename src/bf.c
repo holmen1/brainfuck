@@ -40,9 +40,22 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // TODO: Implement interpreter here
-    printf("Interpreter not yet implemented\n");
-    printf("Input file: %s\n", argv[1]);
+    // Read Brainfuck source file
+    char program[PROGRAM_SIZE];
+    int program_length = 0;
     
-    return 0;
+    FILE *file = fopen(argv[1], "r");
+    if (!file) {
+        fprintf(stderr, "Error: Cannot open file '%s'\n", argv[1]);
+        return 1;
+    }
+    
+    int ch;
+    while ((ch = fgetc(file)) != EOF && program_length < PROGRAM_SIZE) {
+        program[program_length++] = ch;
+    }
+    
+    fclose(file);
+    
+    return (program_length > 0) ? 0 : 1;
 }

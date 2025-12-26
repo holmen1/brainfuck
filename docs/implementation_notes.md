@@ -9,8 +9,23 @@ Working document for tracking progress, decisions, and lessons learned while imp
 - Set up build system (Makefile)
 - Added example BF programs
 
-### Date: [Your Date Here]
-- TODO: Log your progress as you work
+### Date: 2025-12-26
+- Cleaned up Makefile for minimal interpreter-only build
+  - Removed compiler (bfc), debug, and benchmark targets
+  - Added SRCDIR and BINDIR variables to keep project root clean
+  - Binary now builds to `bin/bf` instead of project root
+- Implemented basic file I/O in bf.c
+  - Reads Brainfuck source file into program buffer
+  - Returns 0 on success, 1 on error
+  - File size limit: PROGRAM_SIZE (100,000 bytes)
+- Created test suite (tests/run_tests.sh)
+  - Converted to POSIX shell (#!/bin/sh)
+  - Tests use && || operators instead of if statements for conciseness
+  - 3 tests: valid file, missing file, no arguments
+  - All tests passing
+
+**Next steps**: Implement main execution loop and simple commands (>, <, +, -, ., ,)
+
 
 ## Phase 2: Interpreter Implementation
 
