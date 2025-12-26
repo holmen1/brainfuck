@@ -10,29 +10,37 @@
 #define MEMORY_SIZE 30000
 #define PROGRAM_SIZE 100000
 
-/* TODO: Implement the interpreter
+/**
+ * Read Brainfuck source file into buffer
  * 
- * Components needed:
- * 1. Memory array (30,000 bytes, initialized to 0)
- * 2. Data pointer (starts at 0)
- * 3. Program storage
- * 4. Program counter
- * 5. Jump table for brackets
- * 
- * Steps:
- * 1. Read Brainfuck source file
- * 2. Build bracket jump table (match [ with ])
- * 3. Execute commands in loop:
- *    > : increment data pointer
- *    < : decrement data pointer
- *    + : increment byte at data pointer
- *    - : decrement byte at data pointer
- *    . : output byte at data pointer
- *    , : input byte to data pointer
- *    [ : if byte is 0, jump to matching ]
- *    ] : if byte is non-zero, jump back to matching [
- * 4. Add error checking (mismatched brackets, bounds, etc.)
+ * @param filename Path to .bf source file
+ * @param buffer   Pre-allocated buffer to store program
+ * @param max_size Maximum bytes to read
+ * @return Number of bytes read, or -1 on error
  */
+int read_program(const char *filename, char *buffer, int max_size) {
+    FILE *file = fopen(filename, "r");
+    if (!file) {
+        fprintf(stderr, "Error: Cannot open file '%s'\n", filename);
+        return -1;
+    }
+    
+    int length = 0;
+    int ch;
+    while ((ch = fgetc(file)) != EOF && length < max_size) {
+        buffer[length++] = ch;
+    }
+    
+    fclose(file);
+    
+    // Check if file was too large
+    if (ch != EOF && length == max_size) {
+        fprintf(stderr, "Error: Program too large (max %d bytes)\n", max_size);
+        return -1;
+    }
+    
+    return length;
+}
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
@@ -42,20 +50,11 @@ int main(int argc, char *argv[]) {
 
     // Read Brainfuck source file
     char program[PROGRAM_SIZE];
-    int program_length = 0;
+    int program_length = read_program(argv[1], program, PROGRAM_SIZE);
     
-    FILE *file = fopen(argv[1], "r");
-    if (!file) {
-        fprintf(stderr, "Error: Cannot open file '%s'\n", argv[1]);
-        return 1;
+    if (program_length < 0) {
+        return 1;  // Error message already printed by read_program()
     }
-    
-    int ch;
-    while ((ch = fgetc(file)) != EOF && program_length < PROGRAM_SIZE) {
-        program[program_length++] = ch;
-    }
-    
-    fclose(file);
     
     return (program_length > 0) ? 0 : 1;
 }
