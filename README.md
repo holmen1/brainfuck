@@ -14,6 +14,12 @@ The brainfuck interpreter knows the following instructions:
 
 ## Usage (so far)
 
+### Hello World
+```bash
+$ ./bin/bf ./examples/hello_world.bf
+Hello World!
+```
+
 ### Build and test
 
 ```bash
