@@ -1,0 +1,19 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "-std=c99",
+      "-Wall",
+      "-Wextra",
+      "-O2",
+      "-Iinclude",
+      "-o",
+      "bin/bf",
+      "src/bf.c"
+    ],
+    "directory": "/home/holmen1/repos/brainfuck",
+    "file": "/home/holmen1/repos/brainfuck/src/bf.c",
+    "output": "/home/holmen1/repos/brainfuck/bin/bf"
+  }
+]
