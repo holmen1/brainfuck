@@ -1,5 +1,7 @@
 # Implementation Notes
 
+Working document for tracking progress, decisions, and lessons learned while implementing the Brainfuck interpreter and compiler.
+
 ## Progress Log
 
 ### Date: 2025-12-25
@@ -7,34 +9,368 @@
 - Set up build system (Makefile)
 - Added example BF programs
 
-## Interpreter Notes
+### Date: [Your Date Here]
+- TODO: Log your progress as you work
+
+## Phase 2: Interpreter Implementation
 
 ### Bracket Matching Strategy
-TODO: Document your approach to matching [ and ]
+**Chosen approach**: (stack-based / pre-processing / other)
+
+TODO: Document your implementation:
+- How did you handle nested brackets?
+- Data structure used (array, linked list, etc.)
+- Time complexity: O(?)
+- Space complexity: O(?)
+
+**Challenges encountered**:
+- TODO: What edge cases did you find?
+- TODO: How did you debug mismatched brackets?
+
+**Code snippet**:
+```c
+// Paste your bracket matching code here
+```
 
 ### Memory Management
-TODO: Notes on pointer bounds checking
+TODO: Document your decisions:
+- Array size: 30000 bytes (standard) or different?
+- Pointer bounds checking: How do you handle out-of-bounds?
+- Cell wrapping: Do cells wrap at 255/0 or error?
 
-### Optimization Ideas
-TODO: Track optimization ideas as you implement
+**Bounds checking approach**:
+```c
+// Your implementation here
+```
 
-## Compiler Notes
+### Main Execution Loop
+TODO: Describe your interpreter's main loop:
+- Switch statement vs function pointers vs other?
+- How many instructions per second?
 
-### Assembly Generation
-TODO: Document assembly generation strategy
+**Performance notes**:
+- Simple programs: ___ instructions/sec
+- Complex programs (mandelbrot): ___ seconds
 
-### Linking Process
-TODO: Notes on using nasm/gcc for linking
+### Error Handling
+TODO: What errors do you check for?
+- [ ] Mismatched brackets
+- [ ] Pointer underflow (< at position 0)
+- [ ] Pointer overflow (> at position 29999)
+- [ ] File I/O errors
+- [ ] EOF on input (`,` command)
 
-### Performance Results
-TODO: Record benchmark results
+**Error reporting strategy**:
+- TODO: Line numbers? Descriptive messages?
 
-## Debugging Tips
+### Debug Mode Implementation
+If you implemented `-d` flag:
+- TODO: What information do you display?
+- TODO: Memory visualization approach?
 
-TODO: Add useful debugging techniques you discover
+## Phase 3: Writing Brainfuck Programs
 
-## Resources
+### Programs Created
+1. **Program name**: TODO
+   - Purpose: 
+   - Key insight:
+   - Challenges:
 
-- [Brainfuck Wiki](https://esolangs.org/wiki/Brainfuck)
-- [x86-64 Reference](https://www.felixcloutier.com/x86/)
-- [Linux syscalls](https://filippo.io/linux-syscall-table/)
+### Idioms Learned
+TODO: Document useful patterns you discovered:
+- `[-]` - Clear cell
+- `[->+<]` - Move value
+- Other patterns:
+
+## Phase 4: Compiler Implementation
+
+### Backend Choice
+**Selected**: (LLVM IR / C code / x86-64 asm / ARM64 asm / other)
+
+**Rationale**: TODO: Why did you choose this backend?
+
+---
+
+### LLVM IR Implementation (if chosen)
+
+#### Setup and Tooling
+**LLVM version**: TODO
+**Compilation command**: `clang -O2 output.ll -o program`
+
+#### IR Generation Strategy
+TODO: Document your approach:
+- How do you track SSA register numbers?
+- Loop label naming scheme?
+- How do you handle nested loops?
+
+**Key design decisions**:
+- Memory allocation: Stack (`alloca`) or heap?
+- Pointer type: `i32` or `i64`?
+- Optimization level: -O0, -O1, -O2, or -O3?
+
+#### Command Translation
+Document your actual LLVM IR for each command:
+
+**Pointer movement** (`>` and `<`):
+```llvm
+; Paste your actual IR here
+```
+
+**Cell modification** (`+` and `-`):
+```llvm
+; Paste your actual IR here
+```
+
+**I/O** (`.` and `,`):
+```llvm
+; Paste your actual IR here
+```
+
+**Loop implementation** (`[` and `]`):
+```llvm
+; Paste your actual loop IR here
+; Document your check/body/end block structure
+```
+
+#### Challenges with LLVM IR
+TODO: What was difficult?
+- GEP (getelementptr) understanding?
+- SSA form constraints?
+- Type conversions (i8 ↔ i32)?
+- Loop structure?
+
+#### LLVM IR Examples Generated
+Paste interesting examples of generated IR:
+```llvm
+; Example: "+++" (three increments)
+; Does your compiler optimize this to a single add?
+```
+
+---
+
+### C Code Generation (if chosen)
+
+#### Generated Code Structure
+TODO: Document your C code generation approach
+- Include statements needed?
+- Global vs local memory array?
+- Helper functions or inline everything?
+
+#### Example Generated Code
+```c
+// Paste example of your generated C code
+```
+
+---
+
+### x86-64 Assembly Implementation (if chosen)
+
+#### Assembly Syntax
+**Chosen syntax**: (NASM / GAS / other)
+
+#### Register Usage
+TODO: Document your register allocation:
+- Data pointer: `rax`? `rbx`? Other?
+- Scratch registers for I/O?
+- Stack usage?
+
+#### Syscall Strategy
+**I/O approach**: (syscalls / libc functions)
+
+**Output** (`.` command):
+```asm
+; Paste your assembly here
+```
+
+**Input** (`,` command):
+```asm
+; Paste your assembly here
+```
+
+#### Loop Implementation
+TODO: Document your label generation:
+- Naming scheme for loop labels?
+- How do you track matching brackets?
+
+```asm
+; Example loop assembly
+```
+
+#### Assembly & Linking
+**Commands used**:
+```bash
+# Assemble:
+# Link:
+```
+
+**Challenges**:
+- TODO: What was tricky about assembly generation?
+- TODO: Debugging approach for assembly?
+
+---
+
+### Optimizations Implemented
+
+#### Pre-Codegen Optimizations
+Check off optimizations you've implemented:
+
+- [ ] **Constant folding**: `+++` → add by 3
+  - Implementation notes:
+  
+- [ ] **Clear loops**: `[-]` or `[+]` → set to 0
+  - Pattern recognition approach:
+  
+- [ ] **Copy loops**: `[->+<]` optimization
+  - How did you detect this pattern?
+  
+- [ ] **Scan loops**: `[>]` or `[<]` optimization
+  - Translation (if using x86-64):
+
+- [ ] **Dead code elimination**
+  - What constitutes dead code in BF?
+
+- [ ] **Other optimizations**:
+  - TODO: Document any novel optimizations
+
+#### Backend-Specific Optimizations
+If using LLVM:
+- LLVM optimization flags used: `-O0`, `-O1`, `-O2`, `-O3`?
+- Did you examine the assembly output? Any surprises?
+
+If using x86-64:
+- Register optimizations?
+- Special instructions used (e.g., `repne scasb` for scan)?
+
+### Compilation Pipeline
+TODO: Document your end-to-end process:
+1. Read BF source
+2. Validate/parse
+3. (Optional) Optimization pass
+4. Code generation
+5. Write output file (.ll / .c / .asm)
+6. Invoke compiler/assembler
+7. Produce executable
+
+**Build times**:
+- Small programs (<100 BF instructions): ___ ms
+- Large programs (1000+ instructions): ___ ms
+
+## Benchmarking Results
+
+### Interpreter Performance
+| Program | Instructions Executed | Time | Inst/sec |
+|---------|---------------------|------|----------|
+| hello_world.bf | TODO | TODO | TODO |
+| mandelbrot.bf | TODO | TODO | TODO |
+| (your program) | TODO | TODO | TODO |
+
+### Compiler Performance
+| Program | Compile Time | Run Time | Speedup vs Interpreter |
+|---------|-------------|----------|----------------------|
+| hello_world.bf | TODO | TODO | TODOx |
+| mandelbrot.bf | TODO | TODO | TODOx |
+| (your program) | TODO | TODO | TODOx |
+
+**Notes**:
+- TODO: What was the typical speedup? (Expected: 50-100x)
+- TODO: Which programs benefit most from compilation?
+- TODO: Where is the bottleneck (I/O vs computation)?
+
+### Effect of Optimizations
+| Optimization | Before | After | Improvement |
+|-------------|--------|-------|-------------|
+| Constant folding | TODO | TODO | TODO% |
+| Clear loops | TODO | TODO | TODO% |
+| (your opt) | TODO | TODO | TODO% |
+
+## Debugging Tips & Lessons Learned
+
+### What Worked Well
+TODO: Document your successful debugging strategies:
+- 
+- 
+- 
+
+### Common Mistakes to Avoid
+TODO: What bugs did you encounter?
+1. 
+2. 
+3. 
+
+### Tools Used
+TODO: What tools helped?
+- Debugger (gdb, lldb): Used for?
+- Valgrind: Memory issues found?
+- Profiling tools: 
+- Other:
+
+### Key Insights
+TODO: What did you learn about:
+- Language implementation?
+- Compiler design?
+- Performance optimization?
+- Assembly programming?
+
+## Future Work & Ideas
+
+### Potential Improvements
+TODO: What would you do differently?
+- [ ] Different data structures?
+- [ ] Better optimization passes?
+- [ ] JIT compilation?
+- [ ] Different target architecture?
+
+### Extensions to Try
+- [ ] Larger cell sizes (16-bit, 32-bit)
+- [ ] Additional commands
+- [ ] Debugger UI
+- [ ] Syntax highlighter
+- [ ] Other: TODO
+
+## Resources Used
+
+### Specifications & Documentation
+- [Brainfuck Language Spec](https://esolangs.org/wiki/Brainfuck)
+- [LLVM Language Reference](https://llvm.org/docs/LangRef.html) (if using LLVM)
+- [x86-64 Reference](https://www.felixcloutier.com/x86/) (if using asm)
+- [Linux syscalls](https://filippo.io/linux-syscall-table/) (if using syscalls)
+
+### Helpful Examples & Tutorials
+TODO: Add links to resources you found helpful:
+- 
+- 
+- 
+
+### Code References
+TODO: Did you study other implementations? List them:
+- 
+- 
+
+---
+
+## Quick Reference
+
+### Build Commands
+```bash
+# Build interpreter
+make bf
+
+# Build compiler
+make bfc
+
+# Test interpreter
+./bf examples/hello_world.bf
+
+# Test compiler
+./bfc examples/hello_world.bf -o hello && ./hello
+
+# Benchmark
+make benchmark
+```
+
+### File Locations
+- Interpreter: `src/bf.c`
+- Compiler: `src/bfc.c`
+- Backend implementations: `src/codegen_*.c`
+- Examples: `examples/*.bf`
+- Tests: `tests/*.bf`
