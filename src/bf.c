@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 /* Internal function declarations */
-static int find_matching_bracket(const char *program, int pos, int direction);
+static int build_jump_table(const char *program, int program_length, int *jump_table);
 
 int main(int argc, char *argv[])
 {
@@ -18,13 +18,19 @@ int main(int argc, char *argv[])
 
     char program[PROGRAM_SIZE];
     int program_length = read_program(argv[1], program, PROGRAM_SIZE);
-
     if (program_length < 0) {
-        return 1; // Error message already printed by read_program()
+        return -1; // Error message already printed by read_program()
+    }
+
+    // Build jump table and validate brackets in one pass
+    int jump_table[PROGRAM_SIZE];
+    int unmatched = build_jump_table(program, program_length, jump_table);
+    if (unmatched) {
+        return unmatched;
     }
 
     unsigned char memory[MEMORY_SIZE] = {0};
-    return execute_program(program, program_length, memory);
+    return execute_program(program, program_length, memory, jump_table);
 }
 
 /**
@@ -70,12 +76,13 @@ int read_program(const char *filename, char *buffer, int max_size)
  *   program        - Brainfuck source code
  *   program_length - Number of instructions
  *   memory         - Pre-allocated memory array
+ *   jump_table     - Pre-computed bracket jump positions
  *
  * Returns:
  *   0 on success
  */
 int execute_program(const char *program, int program_length,
-                    unsigned char *memory)
+                    unsigned char *memory, const int *jump_table)
 {
     unsigned char *cell = memory; /* pointer to current cell */
 
@@ -104,12 +111,12 @@ int execute_program(const char *program, int program_length,
             break;
         case '[':
             if (*cell == 0) {
-                pc = find_matching_bracket(program, pc, +1);
+                pc = jump_table[pc];
             }
             break;
         case ']':
             if (*cell != 0) {
-                pc = find_matching_bracket(program, pc, -1);
+                pc = jump_table[pc];
             }
             break;
         default:
@@ -120,19 +127,52 @@ int execute_program(const char *program, int program_length,
     return 0;
 }
 
-static int find_matching_bracket(const char *program, int pos, int direction)
+/**
+ * Build jump table for bracket pairs and validate bracket matching
+ *
+ * This function does two things in one pass:
+ * 1. Validates that all brackets are properly matched
+ * 2. Builds a jump table for O(1) bracket jumping during execution
+ *
+ * Arguments:
+ *   program        - Brainfuck source code
+ *   program_length - Number of instructions
+ *   jump_table     - Output array mapping bracket positions to their matches
+ *
+ * Returns:
+ *   0 if all brackets match, otherwise the number of unmatched brackets
+ */
+static int build_jump_table(const char *program, int program_length, int *jump_table)
 {
-    int depth = 1;
-    while (1) {
-        pos += direction;
-        if (program[pos] == '[') {
-            depth += (direction == +1) ? 1 : -1;
-        } else if (program[pos] == ']') {
-            depth += (direction == +1) ? -1 : 1;
-        }
+    int stack[PROGRAM_SIZE]; // Stack to track opening bracket positions
+    int stack_ptr = 0;       // Current stack depth
+    int unmatched_close = 0; // Count of ']' without matching '['
 
-        if (depth == 0) {
-            return pos;
+    for (int i = 0; i < program_length; i++) {
+        if (program[i] == '[') {
+            // Push opening bracket position onto stack
+            stack[stack_ptr++] = i;
+        } else if (program[i] == ']') {
+            if (stack_ptr > 0) {
+                // Found matching pair - record both directions in jump table
+                int open_pos = stack[--stack_ptr];
+                jump_table[open_pos] = i; // '[' jumps to ']'
+                jump_table[i] = open_pos; // ']' jumps to '['
+            } else {
+                // Closing bracket without opening
+                unmatched_close++;
+            }
         }
     }
+
+    // stack_ptr now contains count of unmatched opening brackets
+    int unmatched_open = stack_ptr;
+    int total_unmatched = unmatched_open + unmatched_close;
+
+    if (total_unmatched > 0) {
+        fprintf(stderr, "Error: %d unmatched bracket%s\n",
+                total_unmatched, total_unmatched == 1 ? "" : "s");
+    }
+
+    return total_unmatched;
 }

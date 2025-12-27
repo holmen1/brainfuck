@@ -50,4 +50,18 @@ Test 6: Loop multiplication (+++[>++<-]>.)
 ✓ PASS (output: ASCII 6)
 Test 7: Nested loops (++[>++[>++<-]<-]>>.)
 ✓ PASS (output: ASCII 8)
+
+=== Bracket Mismatch Tests ===
+Test 8: Missing closing bracket ([++)
+✓ PASS (exit code: 1)
+Test 9: Missing opening bracket (++])
+✓ PASS (exit code: 1)
+Test 10: Multiple missing closing brackets ([[++)
+✓ PASS (exit code: 2)
+Test 11: Multiple missing opening brackets (++]])
+✓ PASS (exit code: 2)
+Test 12: Mixed mismatches ([[])
+✓ PASS (exit code: 1)
+Test 13: Properly balanced brackets ([]++.)
+✓ PASS (exit code: 0, output: ASCII 2)
 ```

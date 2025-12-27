@@ -10,6 +10,6 @@
 #define PROGRAM_SIZE 100000
 
 int read_program(const char *filename, char *buffer, int max_size);
-int execute_program(const char *program, int program_length, unsigned char *memory);
+int execute_program(const char *program, int program_length, unsigned char *memory, const int *jump_table);
 
 #endif /* BF_H */

@@ -43,4 +43,43 @@ RESULT=$(printf '++[>++[>++<-]<-]>>.' | ./bin/bf /dev/stdin 2>/dev/null | od -An
 [ "$RESULT" = "08" ] && echo "✓ PASS (output: ASCII 8)" || echo "✗ FAIL (got: $RESULT, expected: 08)"
 
 echo ""
+echo "=== Bracket Mismatch Tests ==="
+
+# Test 8: Opening bracket without closing
+echo "Test 8: Missing closing bracket ([++)"
+printf '[++' | ./bin/bf /dev/stdin 2>/dev/null
+EXIT_CODE=$?
+[ "$EXIT_CODE" = "1" ] && echo "✓ PASS (exit code: 1)" || echo "✗ FAIL (got exit code: $EXIT_CODE, expected: 1)"
+
+# Test 9: Closing bracket without opening
+echo "Test 9: Missing opening bracket (++])"
+printf '++]' | ./bin/bf /dev/stdin 2>/dev/null
+EXIT_CODE=$?
+[ "$EXIT_CODE" = "1" ] && echo "✓ PASS (exit code: 1)" || echo "✗ FAIL (got exit code: $EXIT_CODE, expected: 1)"
+
+# Test 10: Multiple unmatched opening brackets
+echo "Test 10: Multiple missing closing brackets ([[++)"
+printf '[[++' | ./bin/bf /dev/stdin 2>/dev/null
+EXIT_CODE=$?
+[ "$EXIT_CODE" = "2" ] && echo "✓ PASS (exit code: 2)" || echo "✗ FAIL (got exit code: $EXIT_CODE, expected: 2)"
+
+# Test 11: Multiple unmatched closing brackets
+echo "Test 11: Multiple missing opening brackets (++]])"
+printf '++]]' | ./bin/bf /dev/stdin 2>/dev/null
+EXIT_CODE=$?
+[ "$EXIT_CODE" = "2" ] && echo "✓ PASS (exit code: 2)" || echo "✗ FAIL (got exit code: $EXIT_CODE, expected: 2)"
+
+# Test 12: Mixed mismatches
+echo "Test 12: Mixed mismatches ([[])"
+printf '[[]' | ./bin/bf /dev/stdin 2>/dev/null
+EXIT_CODE=$?
+[ "$EXIT_CODE" = "1" ] && echo "✓ PASS (exit code: 1)" || echo "✗ FAIL (got exit code: $EXIT_CODE, expected: 1)"
+
+# Test 13: Properly balanced brackets should still work
+echo "Test 13: Properly balanced brackets ([]++.)"
+RESULT=$(printf '[]++.' | ./bin/bf /dev/stdin 2>/dev/null | od -An -tx1 -v | tr -d ' ')
+EXIT_CODE=$?
+[ "$EXIT_CODE" = "0" ] && [ "$RESULT" = "02" ] && echo "✓ PASS (exit code: 0, output: ASCII 2)" || echo "✗ FAIL (exit code: $EXIT_CODE, output: $RESULT)"
+
+echo ""
 

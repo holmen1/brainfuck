@@ -75,9 +75,40 @@ Working document for tracking progress, decisions, and lessons learned while imp
   - Made `find_matching_bracket()` static (internal to bf.c only)
   - **Rationale**: Not part of public API, should be hidden implementation detail
 
+**Bracket Validation and Jump Table Implementation**
 
+- **Problem identified**: Original approach would validate brackets twice (once for errors, once for building jump table)
+- **Solution**: Combined validation and jump table building in a single pass
+  - Function: `build_jump_table(program, program_length, jump_table)`
+  - Uses stack-based algorithm to track opening brackets
+  - Builds bidirectional jump table for O(1) lookups during execution
+  - Validates bracket matching simultaneously - no redundant work
 
-**Next steps**: Error handling for mismatched brackets (currently assumes valid programs)
+**Algorithm**:
+```c
+// Single pass through program:
+// - '[' pushes position onto stack
+// - ']' pops from stack and records both jump directions
+// - Empty stack on ']' means unmatched closing bracket
+// - Non-empty stack at end means unmatched opening brackets
+```
+
+**Key improvements**:
+1. **One pass validation**: Bracket errors detected during jump table construction
+2. **O(1) bracket jumps**: Pre-computed jumps eliminate runtime scanning
+3. **Exit code reflects errors**: Returns count of unmatched brackets (opening + closing)
+4. **Efficient**: From O(n) per bracket jump to O(1) lookup
+
+**Test suite expanded**:
+- Test 8-11: Various bracket mismatch scenarios
+- Test 12: Mixed mismatches  
+- Test 13: Properly balanced brackets still work
+- Exit codes correctly reflect number of unmatched brackets
+
+**Performance impact**:
+- Preprocessing: O(n) single pass through program
+- Execution: O(1) bracket jumps vs O(n) scanning
+- Major speedup for loop-heavy programs (no more repeated bracket scanning)
 
 
 ## Phase 2: Interpreter Implementation
