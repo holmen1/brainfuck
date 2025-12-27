@@ -5,8 +5,9 @@
 
 #include "bf.h"
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+
+/* Internal function declarations */
+static int find_matching_bracket(const char *program, int pos, int direction);
 
 int main(int argc, char *argv[])
 {
@@ -15,7 +16,6 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    // Read Brainfuck source file
     char program[PROGRAM_SIZE];
     int program_length = read_program(argv[1], program, PROGRAM_SIZE);
 
@@ -23,9 +23,8 @@ int main(int argc, char *argv[])
         return 1; // Error message already printed by read_program()
     }
 
-    execute_program(program, program_length);
-
-    return (program_length > 0) ? 0 : 1;
+    unsigned char memory[MEMORY_SIZE] = {0};
+    return execute_program(program, program_length, memory);
 }
 
 /**
@@ -70,10 +69,14 @@ int read_program(const char *filename, char *buffer, int max_size)
  * Arguments:
  *   program        - Brainfuck source code
  *   program_length - Number of instructions
+ *   memory         - Pre-allocated memory array
+ *
+ * Returns:
+ *   0 on success
  */
-void execute_program(const char *program, int program_length)
+int execute_program(const char *program, int program_length,
+                    unsigned char *memory)
 {
-    unsigned char memory[MEMORY_SIZE] = {0};
     unsigned char *cell = memory; /* pointer to current cell */
 
     /* Main execution loop */
@@ -114,9 +117,10 @@ void execute_program(const char *program, int program_length)
             break;
         }
     }
+    return 0;
 }
 
-int find_matching_bracket(const char *program, int pos, int direction)
+static int find_matching_bracket(const char *program, int pos, int direction)
 {
     int depth = 1;
     while (1) {

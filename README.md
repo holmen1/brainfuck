@@ -1,4 +1,11 @@
 # brainfuck
+
+A minimal, suckless Brainfuck interpreter written in C99.
+
+Brainfuck is an esoteric programming language created by Urban Müller in 1993. See the [language specification](https://esolangs.org/wiki/Brainfuck) for details.
+
+## Language Reference
+
 The brainfuck interpreter knows the following instructions:
 
 |Cmd|Effect|                               
