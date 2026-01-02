@@ -691,10 +691,10 @@ time ./mandelbrot_compiled > /dev/null
 ## Learning Milestones
 
 ### Interpreter Path
-- [ ] **Milestone 1**: Understand all 8 commands
-- [ ] **Milestone 2**: Basic interpreter runs "Hello World"
-- [ ] **Milestone 3**: Complete interpreter with error handling
-- [ ] **Milestone 4**: Write your own BF programs (echo, add, etc.)
+- [x] **Milestone 1**: Understand all 8 commands
+- [x] **Milestone 2**: Basic interpreter runs "Hello World"
+- [x] **Milestone 3**: Complete interpreter with error handling
+- [x] **Milestone 4**: Write your own BF programs (echo, add, etc.)
 
 ### Compiler Path (Following LLVM Tutorial Structure)
 - [ ] **Milestone 5**: Implement lexer - tokenize BF source

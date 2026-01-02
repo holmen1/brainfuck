@@ -82,4 +82,12 @@ EXIT_CODE=$?
 [ "$EXIT_CODE" = "0" ] && [ "$RESULT" = "02" ] && echo "✓ PASS (exit code: 0, output: ASCII 2)" || echo "✗ FAIL (exit code: $EXIT_CODE, output: $RESULT)"
 
 echo ""
+echo "=== Addition Program Tests ==="
+
+# Test 14: Addition 2+2=4
+echo "Test 14: Addition (2+2=4)"
+RESULT=$(echo -n '22' | ./bin/bf examples/add.bf 2>/dev/null | od -An -tx1 | tr -d ' ')
+[ "$RESULT" = "34" ] && echo "✓ PASS (output: '4')" || echo "✗ FAIL (got: $RESULT, expected: 34)"
+
+echo ""
 
