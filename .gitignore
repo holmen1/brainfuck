@@ -1,7 +1,5 @@
 # Compiled executables
-bf
-bfc
-hello
+
 *.out
 a.out
 

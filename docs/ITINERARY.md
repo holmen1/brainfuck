@@ -585,29 +585,52 @@ Choose your backend and implement:
 
 ### Compiler Project Structure
 
-Following LLVM tutorial conventions:
-
 ```
-bfc                     # Compiler executable
-├── src/
-│   ├── bfc.c           # Main compiler driver
-│   ├── lexer.c         # Tokenization
-│   ├── lexer.h
-│   ├── ast.c           # AST node creation/management
-│   ├── ast.h
-│   ├── parser.c        # Parse tokens → AST
-│   ├── parser.h
-│   ├── ir.c            # IR generation & optimization
-│   ├── ir.h
-│   ├── codegen_llvm.c  # LLVM IR backend (recommended)
-│   ├── codegen_c.c     # C backend (simplest)
-│   ├── codegen_x64.c   # x86-64 backend (advanced)
-│   └── codegen_arm64.c # ARM64 backend (alternative)
-└── tests/
-    ├── test_lexer.c
-    ├── test_parser.c
-    ├── test_ir.c
-    └── test_codegen.c
+brainfuck/
+├── README.md
+├── bf/                          # Interpreter project
+│   ├── Makefile
+│   ├── include/
+│   │   └── bf.h
+│   ├── src/
+│   │   └── bf.c
+│   ├── examples/
+│   │   ├── hello_world.bf
+│   │   ├── echo.bf
+│   │   ├── add.bf
+│   │   ├── fibonacci.bf
+│   │   └── mandelbrot.bf
+│   └── tests/
+│       └── run_tests.sh
+│
+├── bfc/                         # Compiler project
+│   ├── Makefile
+│   ├── include/
+│   │   ├── lexer.h
+│   │   ├── ast.h
+│   │   ├── parser.h
+│   │   ├── ir.h
+│   │   ├── codegen_llvm.h
+│   │   ├── codegen_c.h
+│   │   └── codegen_x64.h
+│   ├── src/
+│   │   ├── bfc.c
+│   │   ├── lexer.c
+│   │   ├── ast.c
+│   │   ├── parser.c
+│   │   ├── ir.c
+│   │   ├── codegen_llvm.c
+│   │   ├── codegen_c.c
+│   │   └── codegen_x64.c
+│   └── tests/
+│       ├── test_lexer.c
+│       ├── test_parser.c
+│       ├── test_ir.c
+│       └── test_codegen.c
+│
+└── docs/
+    ├── ITINERARY.md
+    └── implementation_notes.md
 ```
 
 ### Step 6: Optimizations
@@ -695,6 +718,7 @@ time ./mandelbrot_compiled > /dev/null
 - [x] **Milestone 2**: Basic interpreter runs "Hello World"
 - [x] **Milestone 3**: Complete interpreter with error handling
 - [x] **Milestone 4**: Write your own BF programs (echo, add, etc.)
+- []  **Optional**: Debug Mode Implementation
 
 ### Compiler Path (Following LLVM Tutorial Structure)
 - [ ] **Milestone 5**: Implement lexer - tokenize BF source
@@ -707,41 +731,6 @@ time ./mandelbrot_compiled > /dev/null
 - [ ] **Milestone 12**: Benchmark: 50x+ speedup vs interpreter
 - [ ] **Milestone 13**: (Optional) Try a different backend (x86-64, ARM64)
 
-## Project Structure
-
-### Interpreter + Compiler (LLVM Tutorial Style)
-```
-brainfuck/
-├── README.md
-├── Makefile
-├── src/
-│   ├── bf.c              # Interpreter
-│   ├── bf.h              # Interpreter header
-│   ├── bfc.c             # Compiler main driver
-│   ├── lexer.c           # Tokenization
-│   ├── lexer.h
-│   ├── ast.c             # AST node management
-│   ├── ast.h
-│   ├── parser.c          # Parse tokens → AST
-│   ├── parser.h
-│   ├── ir.c              # IR generation & optimization
-│   ├── ir.h
-│   ├── codegen_llvm.c    # LLVM IR code generation
-│   ├── codegen_c.c       # C code generation
-│   ├── codegen_x64.c     # x86-64 assembly generation
-│   └── codegen_arm64.c   # ARM64 assembly generation
-├── examples/
-│   ├── hello_world.bf
-│   ├── echo.bf
-│   ├── fibonacci.bf
-│   └── mandelbrot.bf     # Good benchmark
-├── tests/
-│   └── test_*.bf
-├── benchmarks/
-│   └── bench.sh          # Compare interpreter vs compiler
-└── docs/
-    └── implementation_notes.md
-```
 
 ## Build & Run Commands
 
