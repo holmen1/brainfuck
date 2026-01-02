@@ -7,13 +7,30 @@
       "-Wall",
       "-Wextra",
       "-O2",
-      "-Iinclude",
+      "-Ibf/include",
       "-o",
-      "bin/bf",
-      "src/bf.c"
+      "bf/bin/bf",
+      "bf/src/bf.c"
     ],
     "directory": "/home/holmen1/repos/brainfuck",
-    "file": "/home/holmen1/repos/brainfuck/src/bf.c",
-    "output": "/home/holmen1/repos/brainfuck/bin/bf"
+    "file": "/home/holmen1/repos/brainfuck/bf/src/bf.c",
+    "output": "/home/holmen1/repos/brainfuck/bf/bin/bf"
+  },
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "-std=c99",
+      "-Wall",
+      "-Wextra",
+      "-O2",
+      "-Ibfc/include",
+      "-o",
+      "bfc/bin/bfc",
+      "bfc/src/lexer.c"
+    ],
+    "directory": "/home/holmen1/repos/brainfuck",
+    "file": "/home/holmen1/repos/brainfuck/bfc/src/lexer.c",
+    "output": "/home/holmen1/repos/brainfuck/bfc/bin/bfc"
   }
 ]
