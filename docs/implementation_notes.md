@@ -110,8 +110,11 @@ Working document for tracking progress, decisions, and lessons learned while imp
 - **Write Brainfuck Programs**
   - `add.bf` Add two single digits
   - Added `add.bf` to tests
-- Reorganize project structure 
-
+- Reorganize project structure
+- Began **compiler** implementation (bfc)
+  - Implemented lexer (lexer.c/lexer.h)
+  - O(n) single-pass tokenization
+  - Updated compile_commands.json for LSP support across both projects
 
 
 
