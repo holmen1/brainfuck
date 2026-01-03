@@ -6,8 +6,8 @@ struct Lexer {
     const char *source;
     int position;
     int length;
-    Token current_token;  // Cached current token
-    int token_valid;      // Whether current_token is valid
+    Token current_token; // Cached current token
+    int token_valid;     // Whether current_token is valid
 };
 
 /**
@@ -34,7 +34,7 @@ Lexer *lexer_create(const char *source, int length)
     lexer->source = source;
     lexer->position = 0;
     lexer->length = length;
-    lexer->token_valid = 0;  // No token cached yet
+    lexer->token_valid = 0; // No token cached yet
 
     return lexer;
 }

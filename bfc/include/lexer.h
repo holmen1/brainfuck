@@ -18,7 +18,6 @@ typedef struct {
     int position; // Position in source (for error messages)
 } Token;
 
-
 typedef struct Lexer Lexer;
 
 // Public API

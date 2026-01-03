@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
         lexer_free(lexer);
         free(source);
         return 0;
-     }
+    }
 
     /* TODO: Phase 4: IR Generation
      *
