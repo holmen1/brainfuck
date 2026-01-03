@@ -157,9 +157,13 @@ Working document for tracking progress, decisions, and lessons learned while imp
   - Makefile now compiles: `bfc.c`, `lexer.c`, `ast.c`, `parser.c`
   - Successfully compiles without warnings or errors
 
-**Next Steps**:
-- Code cleanup: `lexer_next_token()` exists but not used by parser. Consider making it private (internal only) to simplify public API. Current design keeps position info available for future error reporting.
-
+- **Lexer API Refinement**
+  - **Primary goal**: Remove `lexer_next_token()` from public API (implementation detail only)
+  - Made `lexer_next_token()` static/private - no longer exposed to parser or main
+  - **Benefit**: Cleaner public API with only high-level operations (`lexer_peek()`, `lexer_next()`)
+  - Added `lexer_format_tokens()` - returns dynamically allocated formatted string
+    - Moves output responsibility from library code to caller
+  
 
 
 

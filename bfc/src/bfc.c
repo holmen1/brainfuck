@@ -10,7 +10,6 @@
 /* #include "codegen_llvm.h" */
 
 static char *read_file(const char *filename, int *length);
-static void print_tokens(Lexer *lexer);
 
 int main(int argc, char *argv[])
 {
@@ -72,7 +71,11 @@ int main(int argc, char *argv[])
     }
 
     if (emit_tokens) {
-        print_tokens(lexer);
+        char *tokens_str = lexer_format_tokens(lexer);
+        if (tokens_str) {
+            printf("%s\n", tokens_str);
+            free(tokens_str);
+        }
         lexer_free(lexer);
         free(source);
         return 0;
@@ -211,48 +214,3 @@ static char *read_file(const char *filename, int *length)
     return buffer;
 }
 
-/**
- * Print all tokens for debugging
- */
-static void print_tokens(Lexer *lexer)
-{
-    printf("Tokens:\n");
-    Token token;
-    do {
-        token = lexer_next_token(lexer);
-        printf("  [%d] ", token.position);
-
-        switch (token.type) {
-        case TOKEN_RIGHT:
-            printf("RIGHT (>)\n");
-            break;
-        case TOKEN_LEFT:
-            printf("LEFT (<)\n");
-            break;
-        case TOKEN_INC:
-            printf("INC (+)\n");
-            break;
-        case TOKEN_DEC:
-            printf("DEC (-)\n");
-            break;
-        case TOKEN_OUTPUT:
-            printf("OUTPUT (.)\n");
-            break;
-        case TOKEN_INPUT:
-            printf("INPUT (,)\n");
-            break;
-        case TOKEN_LOOP_START:
-            printf("LOOP_START ([)\n");
-            break;
-        case TOKEN_LOOP_END:
-            printf("LOOP_END (])\n");
-            break;
-        case TOKEN_EOF:
-            printf("EOF\n");
-            break;
-        default:
-            printf("UNKNOWN (%d)\n", token.type);
-            break;
-        }
-    } while (token.type != TOKEN_EOF);
-}

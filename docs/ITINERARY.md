@@ -721,8 +721,8 @@ time ./mandelbrot_compiled > /dev/null
 - []  **Optional**: Debug Mode Implementation
 
 ### Compiler Path (Following LLVM Tutorial Structure)
-- [ ] **Milestone 5**: Implement lexer - tokenize BF source
-- [ ] **Milestone 6**: Implement parser - build AST from tokens
+- [x] **Milestone 5**: Implement lexer - tokenize BF source
+- [x] **Milestone 6**: Implement parser - build AST from tokens
 - [ ] **Milestone 7**: Generate IR from AST
 - [ ] **Milestone 8**: Implement basic code generation (LLVM IR or C)
 - [ ] **Milestone 9**: Compile "Hello World" to executable
