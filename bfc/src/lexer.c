@@ -1,5 +1,5 @@
-#include "lexer.h"
 #include <stdlib.h>
+#include "lexer.h"
 
 /* Opaque Lexer structure - only visible in implementation */
 struct Lexer {
@@ -59,8 +59,8 @@ Token lexer_next_token(Lexer *lexer)
         char ch = lexer->source[lexer->position];
 
         /* Check if character is a valid BF command */
-        if (ch == '>' || ch == '<' || ch == '+' || ch == '-' ||
-            ch == '.' || ch == ',' || ch == '[' || ch == ']') {
+        if (ch == '>' || ch == '<' || ch == '+' || ch == '-' || ch == '.' ||
+            ch == ',' || ch == '[' || ch == ']') {
             break;
         }
 
