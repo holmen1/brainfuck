@@ -65,7 +65,7 @@ While cell 3 > 0: decrement cell 3, move left twice, decrement cell 1, move righ
 Result: cell 1 now contains the numeric difference  
 `<< .` - Move back to cell 1 and output the character
 
-Example: If you input '2' and '2' (ASCII 50), it calculates (51 + 53) - 48 = 56, which is ASCII '4'
+Example: If you input '2' and '2' (ASCII 50), it calculates (50 + 50) - 48 = 52, which is ASCII '4'
 
 
 ### Build and test
