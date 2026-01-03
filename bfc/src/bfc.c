@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include "lexer.h"
+#include "ast.h"
+#include "parser.h"
 
 /* TODO: Add includes for other compiler phases */
-/* #include "ast.h" */
-/* #include "parser.h" */
 /* #include "ir.h" */
 /* #include "codegen_llvm.h" */
 
@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
     const char *input_file = argv[1];
     const char *output_file = "a.out";
     int emit_tokens = 0;
-    // int emit_ast = 0;
+    int emit_ast = 0;
     // int emit_ir = 0;
     // int emit_llvm = 0;
     // int emit_c = 0;
@@ -46,8 +46,8 @@ int main(int argc, char *argv[])
             //     emit_c = 1;
         } else if (strcmp(argv[i], "--print-tokens") == 0) {
             emit_tokens = 1;
-            // } else if (strcmp(argv[i], "--print-ast") == 0) {
-            //     emit_ast = 1;
+        } else if (strcmp(argv[i], "--print-ast") == 0) {
+            emit_ast = 1;
             // } else if (strcmp(argv[i], "--print-ir") == 0) {
             //     emit_ir = 1;
         } else {
@@ -78,27 +78,22 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    /* TODO: Phase 3: Parser - Build AST
-     *
-     * ASTNode *ast = parser_parse(lexer);
-     * if (!ast) {
-     *     fprintf(stderr, "Error: Parse failed\n");
-     *     lexer_free(lexer);
-     *     free(source);
-     *     return 1;
-     * }
-     */
     printf("Parsing...\n");
-    fprintf(stderr, "TODO: Parser not implemented\n");
+    ASTNode *ast = parser_parse(lexer);
+    if (!ast) {
+        fprintf(stderr, "Error: Parse failed\n");
+        lexer_free(lexer);
+        free(source);
+        return 1;
+    }
 
-    /* TODO: if (emit_ast) {
-     *     ast_print(ast);
-     *     ast_free(ast);
-     *     lexer_free(lexer);
-     *     free(source);
-     *     return 0;
-     * }
-     */
+    if (emit_ast) {
+        ast_print(ast);
+        ast_free(ast);
+        lexer_free(lexer);
+        free(source);
+        return 0;
+     }
 
     /* TODO: Phase 4: IR Generation
      *

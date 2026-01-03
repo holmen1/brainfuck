@@ -6,7 +6,7 @@ BINDIR = bin
 INCDIR = include
 
 BIN = $(BINDIR)/bfc
-SOURCES = $(SRCDIR)/bfc.c $(SRCDIR)/lexer.c
+SOURCES = $(SRCDIR)/bfc.c $(SRCDIR)/lexer.c $(SRCDIR)/ast.c $(SRCDIR)/parser.c
 OBJECTS = $(SOURCES:.c=.o)
 
 all: $(BIN)

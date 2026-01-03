@@ -6,6 +6,8 @@ struct Lexer {
     const char *source;
     int position;
     int length;
+    Token current_token;  // Cached current token
+    int token_valid;      // Whether current_token is valid
 };
 
 /**
@@ -32,6 +34,7 @@ Lexer *lexer_create(const char *source, int length)
     lexer->source = source;
     lexer->position = 0;
     lexer->length = length;
+    lexer->token_valid = 0;  // No token cached yet
 
     return lexer;
 }
@@ -113,4 +116,44 @@ void lexer_free(Lexer *lexer)
     if (lexer) {
         free(lexer);
     }
+}
+
+/**
+ * Peek at the current token without consuming it
+ *
+ * Arguments:
+ *   lexer - Lexer instance
+ *
+ * Returns:
+ *   The current token type
+ */
+TokenType lexer_peek(Lexer *lexer)
+{
+    if (!lexer) {
+        return TOKEN_EOF;
+    }
+
+    /* If we don't have a cached token, get the next one */
+    if (!lexer->token_valid) {
+        lexer->current_token = lexer_next_token(lexer);
+        lexer->token_valid = 1;
+    }
+
+    return lexer->current_token.type;
+}
+
+/**
+ * Consume the current token and move to the next
+ *
+ * Arguments:
+ *   lexer - Lexer instance
+ */
+void lexer_next(Lexer *lexer)
+{
+    if (!lexer) {
+        return;
+    }
+
+    /* Invalidate cached token so next peek will get a new one */
+    lexer->token_valid = 0;
 }

@@ -116,6 +116,52 @@ Working document for tracking progress, decisions, and lessons learned while imp
   - O(n) single-pass tokenization
   - Updated compile_commands.json for LSP support across both projects
 
+### Date: 2026-01-03
+
+**Compiler AST & Parser Implementation**
+
+- **AST Design** (bfc/include/ast.h)
+  - Defined 6 node types: `SEQUENCE`, `MOVE_PTR`, `MODIFY_CELL`, `OUTPUT`, `INPUT`, `LOOP`
+  - Optimization at AST level: consecutive moves/modifications combined into single nodes
+    - Example: `>>>` becomes one `MOVE_PTR(+3)` node, not three separate nodes
+    - Reduces memory usage and simplifies later phases
+  - Union-based data storage for type-specific information
+
+- **AST Implementation** (bfc/src/ast.c)
+  - `ast_create_node()`: Allocates and initializes nodes based on type
+  - `ast_free()`: Recursively frees entire tree (handles all union types)
+  - `ast_print()`: Debug output with proper tree indentation
+    - Shows node type, counts, and operation values (offsets/deltas)
+    - Helps visualize parse results during development
+
+- **Lexer Enhancements** (bfc/src/lexer.c)
+  - Added `lexer_peek()`: Look at current token type without consuming
+  - Added `lexer_next()`: Advance to next token
+  - Caching mechanism: Stores current token to avoid re-scanning
+  - Public API now includes these simple operations (positions available if needed later)
+
+- **Parser Implementation** (bfc/src/parser.c)
+  - `parser_parse()`: Main entry point, returns root `SEQUENCE` node
+    - Dynamically grows children array as statements are added
+    - Returns NULL on error (handles parse failures gracefully)
+  - `parse_statement()`: Handles individual tokens
+    - **Optimization**: Accumulates consecutive operations before creating nodes
+    - Example: Multiple `TOKEN_RIGHT` tokens combine into single `MOVE_PTR` node
+  - `parse_loop()`: Recursive descent for bracket matching
+    - Creates loop node with sequence body
+    - Tracks bracket nesting and detects mismatches
+    - Returns NULL if brackets unmatched
+  - Error handling: Unmatched brackets, EOF detection
+
+- **Build System Updated**
+  - Makefile now compiles: `bfc.c`, `lexer.c`, `ast.c`, `parser.c`
+  - Successfully compiles without warnings or errors
+
+**Next Steps**:
+- Code cleanup: `lexer_next_token()` exists but not used by parser. Consider making it private (internal only) to simplify public API. Current design keeps position info available for future error reporting.
+
+
+
 
 
 
