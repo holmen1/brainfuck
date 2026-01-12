@@ -117,35 +117,52 @@ Test 14: Addition (2+2=4)
 
 ```bash
 $ ./bin/bfc ../bf/examples/add.bf --print-ast
+)$ ./bin/bfc ../bf/examples/add.bf --print-ast
 Reading source file: ../bf/examples/add.bf
 Lexing...
 Parsing...
-SEQUENCE(12 children)
+SEQUENCE(19 children)
   INPUT
-  MOVE_PTR(1)
+  MOVE_RIGHT
   INPUT
-  MOVE_PTR(-1)
+  MOVE_LEFT
   LOOP
     SEQUENCE(4 children)
-      MODIFY_CELL(-1)
-      MOVE_PTR(1)
-      MODIFY_CELL(1)
-      MOVE_PTR(-1)
-  MOVE_PTR(2)
-  MODIFY_CELL(6)
+      DECREMENT
+      MOVE_RIGHT
+      INCREMENT
+      MOVE_LEFT
+  MOVE_RIGHT
+  MOVE_RIGHT
+  INCREMENT
+  INCREMENT
+  INCREMENT
+  INCREMENT
+  INCREMENT
+  INCREMENT
   LOOP
-    SEQUENCE(4 children)
-      MODIFY_CELL(-1)
-      MOVE_PTR(1)
-      MODIFY_CELL(8)
-      MOVE_PTR(-1)
-  MOVE_PTR(1)
+    SEQUENCE(11 children)
+      DECREMENT
+      MOVE_RIGHT
+      INCREMENT
+      INCREMENT
+      INCREMENT
+      INCREMENT
+      INCREMENT
+      INCREMENT
+      INCREMENT
+      INCREMENT
+      MOVE_LEFT
+  MOVE_RIGHT
   LOOP
-    SEQUENCE(4 children)
-      MODIFY_CELL(-1)
-      MOVE_PTR(-2)
-      MODIFY_CELL(-1)
-      MOVE_PTR(2)
-  MOVE_PTR(-2)
+    SEQUENCE(6 children)
+      DECREMENT
+      MOVE_LEFT
+      MOVE_LEFT
+      DECREMENT
+      MOVE_RIGHT
+      MOVE_RIGHT
+  MOVE_LEFT
+  MOVE_LEFT
   OUTPUT
 ```

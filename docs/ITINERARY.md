@@ -219,8 +219,10 @@ The parser consumes tokens and builds an Abstract Syntax Tree that represents th
 ```c
 typedef enum {
     AST_SEQUENCE,     // List of commands
-    AST_MOVE_PTR,     // > or < (combined)
-    AST_MODIFY_CELL,  // + or - (combined)
+    AST_MOVE_RIGHT,   // > (single operation)
+    AST_MOVE_LEFT,    // < (single operation)
+    AST_INCREMENT,    // + (single operation)
+    AST_DECREMENT,    // - (single operation)
     AST_OUTPUT,       // .
     AST_INPUT,        // ,
     AST_LOOP          // [ ... ]
@@ -230,27 +232,23 @@ typedef struct ASTNode {
     ASTNodeType type;
     union {
         struct {
-            int offset;              // For MOVE_PTR: +1 for >, -1 for <
-        } move;
-        struct {
-            int delta;               // For MODIFY_CELL: +1 for +, -1 for -
-        } modify;
-        struct {
             struct ASTNode **children;
             int count;
         } sequence;
         struct {
             struct ASTNode *body;    // For LOOP: body of loop
         } loop;
+        // MOVE_RIGHT, MOVE_LEFT, INCREMENT, DECREMENT, OUTPUT, INPUT have no data
     } data;
 } ASTNode;
 ```
 
 **Why AST?**
-- **Optimization-ready**: Easy to recognize patterns like `+++` → single node with delta=3
-- **Type safety**: Each node has semantic meaning
+- **Clean representation**: Each AST node maps to exactly one token/operation
+- **Type safety**: Each node has semantic meaning (MOVE_RIGHT vs MOVE_LEFT)
 - **Composable**: Loops contain sub-trees, sequences contain lists
-- **Analysis**: Can compute properties (constant folding, dead code detection)
+- **Separation of concerns**: Parse structure first, optimize later
+- **Analysis-ready**: Easy to analyze and transform in separate passes
 
 **Parser implementation** (`src/parser.c`):
 ```c
@@ -267,25 +265,77 @@ void parser_free(Parser *parser);
 ```
 
 **Parsing approach**:
-1. **Sequence parsing**: Parse list of commands/loops into SEQUENCE node
-2. **Loop parsing**: When hitting `[`, recursively parse body until `]`
-3. **Optimization during parse**: Combine consecutive `+`, `-`, `>`, `<`
+1. **Naive 1:1 mapping**: Each token creates exactly one AST node
+2. **Sequence parsing**: Parse list of commands/loops into SEQUENCE node
+3. **Loop parsing**: When hitting `[`, recursively parse body until `]`
 4. **Validation**: Ensure brackets are balanced
+5. **No premature optimization**: Keep parsing and optimization separate
 
 **Example AST**:
 ```
 Program: "++[>+<-]"
 
-AST:
+Naive AST:
 SEQUENCE
-  ├─ MODIFY_CELL(delta=+2)
+  ├─ INCREMENT
+  ├─ INCREMENT  
   └─ LOOP
       └─ SEQUENCE
-           ├─ MOVE_PTR(offset=+1)
-           ├─ MODIFY_CELL(delta=+1)
-           ├─ MOVE_PTR(offset=-1)
-           └─ MODIFY_CELL(delta=-1)
+           ├─ MOVE_RIGHT
+           ├─ INCREMENT
+           ├─ MOVE_LEFT
+           └─ DECREMENT
 ```
+
+**Benefits of Naive AST**:
+- **Educational**: Clear 1:1 correspondence with source tokens
+- **Debuggable**: Easy to trace from source to AST
+- **Flexible**: Optimization can be applied or skipped independently
+- **Architecturally clean**: Single responsibility (parsing vs optimization)
+
+### Step 2.5: AST Optimization (Optional but Recommended)
+
+After building the naive AST, you can apply optimization passes as separate transformations.
+
+**Purpose**: Demonstrate how compilers optimize code through tree transformations
+
+**Optimization passes to implement**:
+
+1. **Consecutive Operation Folding**:
+```c
+// Transform: INCREMENT, INCREMENT, INCREMENT
+// Into:      MODIFY_CELL(delta=+3)
+
+ASTNode* optimize_consecutive_operations(ASTNode* ast);
+```
+
+2. **Movement Folding**:
+```c  
+// Transform: MOVE_RIGHT, MOVE_RIGHT, MOVE_LEFT
+// Into:      MOVE_PTR(offset=+1)
+
+ASTNode* optimize_movement_operations(ASTNode* ast);
+```
+
+3. **Dead Code Elimination**:
+```c
+// Remove operations that have no effect
+// Example: INCREMENT followed by DECREMENT on same cell
+```
+
+**Implementation approach**:
+```c
+// Apply optimization passes in sequence
+ASTNode* ast = parser_parse(lexer);           // Naive AST
+ast = optimize_consecutive_operations(ast);    // Fold consecutive +,-,>,<
+ast = optimize_dead_code(ast);                // Remove redundant operations
+```
+
+**Benefits of separate optimization**:
+- **Modularity**: Each pass has single responsibility
+- **Testability**: Can test naive parser and optimizations independently
+- **Flexibility**: Can enable/disable specific optimizations
+- **Learning**: Shows how real compilers work (multiple passes)
 
 ### Step 3: IR (Intermediate Representation)
 

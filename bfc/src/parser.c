@@ -49,69 +49,26 @@ static ASTNode *parse_statement(Lexer *lexer)
     TokenType token = lexer_peek(lexer);
 
     switch (token) {
-    case TOKEN_RIGHT: {
-        // Accumulate consecutive moves right
-        int offset = 0;
-        while (lexer_peek(lexer) == TOKEN_RIGHT) {
-            lexer_next(lexer);
-            offset++;
-        }
-        ASTNode *node = ast_create_node(AST_MOVE_PTR);
-        if (node) {
-            node->data.move.offset = offset;
-        }
-        return node;
-    }
-    case TOKEN_LEFT: {
-        // Accumulate consecutive moves left
-        int offset = 0;
-        while (lexer_peek(lexer) == TOKEN_LEFT) {
-            lexer_next(lexer);
-            offset--;
-        }
-        ASTNode *node = ast_create_node(AST_MOVE_PTR);
-        if (node) {
-            node->data.move.offset = offset;
-        }
-        return node;
-    }
-    case TOKEN_INC: {
-        // Accumulate consecutive increments
-        int delta = 0;
-        while (lexer_peek(lexer) == TOKEN_INC) {
-            lexer_next(lexer);
-            delta++;
-        }
-        ASTNode *node = ast_create_node(AST_MODIFY_CELL);
-        if (node) {
-            node->data.modify.delta = delta;
-        }
-        return node;
-    }
-    case TOKEN_DEC: {
-        // Accumulate consecutive decrements
-        int delta = 0;
-        while (lexer_peek(lexer) == TOKEN_DEC) {
-            lexer_next(lexer);
-            delta--;
-        }
-        ASTNode *node = ast_create_node(AST_MODIFY_CELL);
-        if (node) {
-            node->data.modify.delta = delta;
-        }
-        return node;
-    }
-    case TOKEN_OUTPUT: {
+    case TOKEN_RIGHT:
+        lexer_next(lexer);
+        return ast_create_node(AST_MOVE_RIGHT);
+    case TOKEN_LEFT:
+        lexer_next(lexer);
+        return ast_create_node(AST_MOVE_LEFT);
+    case TOKEN_INC:
+        lexer_next(lexer);
+        return ast_create_node(AST_INCREMENT);
+    case TOKEN_DEC:
+        lexer_next(lexer);
+        return ast_create_node(AST_DECREMENT);
+    case TOKEN_OUTPUT:
         lexer_next(lexer);
         return ast_create_node(AST_OUTPUT);
-    }
-    case TOKEN_INPUT: {
+    case TOKEN_INPUT:
         lexer_next(lexer);
         return ast_create_node(AST_INPUT);
-    }
-    case TOKEN_LOOP_START: {
+    case TOKEN_LOOP_START:
         return parse_loop(lexer);
-    }
     case TOKEN_LOOP_END:
     case TOKEN_EOF:
     default:

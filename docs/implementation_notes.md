@@ -164,7 +164,35 @@ Working document for tracking progress, decisions, and lessons learned while imp
   - Added `lexer_format_tokens()` - returns dynamically allocated formatted string
     - Moves output responsibility from library code to caller
   
+### Date: 2026-01-12
 
+**AST Architecture Refactoring - From Premature Optimization to Naive Representation**
+
+- **Problem Identified**: AST was prematurely optimizing during parsing
+  - Parser combined consecutive operations (`+++` → `MODIFY_CELL(+3)`)
+  - Mixed parsing and optimization concerns in single phase
+  - Less educational - hid the natural program structure
+  - Harder to debug and trace from source to AST
+
+- **Solution: Refactored to Naive AST**
+  - **Node type changes**: Split `AST_MOVE_PTR`/`AST_MODIFY_CELL` into specific types:
+    - `AST_MOVE_RIGHT`, `AST_MOVE_LEFT` (no offset field)  
+    - `AST_INCREMENT`, `AST_DECREMENT` (no delta field)
+  - **1:1 token mapping**: Each token creates exactly one AST node
+  - **Removed optimization loops**: Parser no longer accumulates consecutive operations
+
+- **Updated Implementation**
+  - `ast.h`: Removed `offset`/`delta` fields from union, added specific node types
+  - `ast.c`: Updated `ast_create_node()`, `ast_free()`, `ast_print_helper()` for new types
+  - `parser.c`: Simplified `parse_statement()` - no accumulation loops, direct token-to-node mapping
+
+- **Educational Benefits**
+  - **Clear traceability**: Source `+++` → 3 `INCREMENT` nodes in AST
+  - **Separation of concerns**: Parsing builds structure, optimization is separate phase
+  - **Debuggable**: Easy to verify parser correctness and AST structure
+  - **Real-world architecture**: Mirrors production compilers (multiple specialized passes)
+
+**Key Insight**: Premature optimization in parsing phase was architecturally wrong. Clean separation of parsing and optimization phases creates better learning experience and more maintainable codebase.
 
 
 

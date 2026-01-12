@@ -3,8 +3,10 @@
 
 typedef enum {
     AST_SEQUENCE,    // List of commands
-    AST_MOVE_PTR,    // > or < (combined)
-    AST_MODIFY_CELL, // + or - (combined)
+    AST_MOVE_RIGHT,  // > (single operation)
+    AST_MOVE_LEFT,   // < (single operation)  
+    AST_INCREMENT,   // + (single operation)
+    AST_DECREMENT,   // - (single operation)
     AST_OUTPUT,      // .
     AST_INPUT,       // ,
     AST_LOOP         // [ ... ]
@@ -14,18 +16,13 @@ typedef struct ASTNode {
     ASTNodeType type;
     union {
         struct {
-            int offset; // For MOVE_PTR: +1 for >, -1 for <
-        } move;
-        struct {
-            int delta; // For MODIFY_CELL: +1 for +, -1 for -
-        } modify;
-        struct {
             struct ASTNode **children;
             int count;
         } sequence;
         struct {
             struct ASTNode *body; // For LOOP: body of loop
         } loop;
+        // MOVE_RIGHT, MOVE_LEFT, INCREMENT, DECREMENT, OUTPUT, INPUT have no data
     } data;
 } ASTNode;
 

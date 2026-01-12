@@ -15,12 +15,6 @@ ASTNode *ast_create_node(ASTNodeType type)
 
     // Initialize the union based on type
     switch (type) {
-    case AST_MOVE_PTR:
-        node->data.move.offset = 0;
-        break;
-    case AST_MODIFY_CELL:
-        node->data.modify.delta = 0;
-        break;
     case AST_SEQUENCE:
         node->data.sequence.children = NULL;
         node->data.sequence.count = 0;
@@ -28,6 +22,10 @@ ASTNode *ast_create_node(ASTNodeType type)
     case AST_LOOP:
         node->data.loop.body = NULL;
         break;
+    case AST_MOVE_RIGHT:
+    case AST_MOVE_LEFT:
+    case AST_INCREMENT:
+    case AST_DECREMENT:
     case AST_OUTPUT:
     case AST_INPUT:
         // These types don't have data
@@ -56,8 +54,10 @@ void ast_free(ASTNode *node)
         // Free the loop body
         ast_free(node->data.loop.body);
         break;
-    case AST_MOVE_PTR:
-    case AST_MODIFY_CELL:
+    case AST_MOVE_RIGHT:
+    case AST_MOVE_LEFT:
+    case AST_INCREMENT:
+    case AST_DECREMENT:
     case AST_OUTPUT:
     case AST_INPUT:
         // No allocated data to free
@@ -90,11 +90,17 @@ static void ast_print_helper(ASTNode *node, int depth)
 
     // Print node type and details
     switch (node->type) {
-    case AST_MOVE_PTR:
-        printf("MOVE_PTR(%d)\n", node->data.move.offset);
+    case AST_MOVE_RIGHT:
+        printf("MOVE_RIGHT\n");
         break;
-    case AST_MODIFY_CELL:
-        printf("MODIFY_CELL(%d)\n", node->data.modify.delta);
+    case AST_MOVE_LEFT:
+        printf("MOVE_LEFT\n");
+        break;
+    case AST_INCREMENT:
+        printf("INCREMENT\n");
+        break;
+    case AST_DECREMENT:
+        printf("DECREMENT\n");
         break;
     case AST_OUTPUT:
         printf("OUTPUT\n");
