@@ -194,6 +194,33 @@ Working document for tracking progress, decisions, and lessons learned while imp
 
 **Key Insight**: Premature optimization in parsing phase was architecturally wrong. Clean separation of parsing and optimization phases creates better learning experience and more maintainable codebase.
 
+## Next Steps (When You Return)
+
+**Current Status**: ✅ Lexer, ✅ Parser, ✅ Naive AST complete
+
+**Option A: Add AST Optimization Passes (Recommended for Learning)**
+1. **Create `bfc/src/ast_optimizer.c`**
+   - `optimize_consecutive_operations()` - fold `+++` → `MODIFY_CELL(+3)` 
+   - `optimize_movement_operations()` - fold `>>>` → `MOVE_PTR(+3)`
+   - `optimize_clear_loops()` - recognize `[-]` patterns
+2. **Add `--print-optimized-ast` flag to see before/after**
+3. **Update main pipeline**: naive AST → optimized AST → IR
+4. **Educational value**: Shows how compiler optimizations work in practice
+
+**Option B: Jump to IR Generation (Faster Path to Working Compiler)**  
+1. **Create `bfc/include/ir.h` and `bfc/src/ir.c`**
+   - Define `IRInstruction` types: `IR_ADD_PTR`, `IR_ADD_CELL`, `IR_OUTPUT`, etc.
+   - `ast_to_ir()` function converts naive AST to linear instruction stream
+2. **Add `--print-ir` flag for debugging**
+3. **Next: Pick backend (LLVM IR recommended)**
+
+**Option C: Quick Win - Implement AST Interpreter**
+- Add `ast_execute()` function to directly run from AST 
+- Good for testing AST correctness before moving to IR/codegen
+- Single afternoon task
+
+**Recommended**: Go with **Option A** (AST optimization) - it's pedagogically valuable and shows the natural compiler progression. Each optimization pass can be implemented and tested independently.
+
 
 
 
