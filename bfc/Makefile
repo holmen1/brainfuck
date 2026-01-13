@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -std=c99 -Wall -Wextra -O2 -Iinclude
+CFLAGS = -std=c99 -Wall -Wextra -Iinclude
 
 SRCDIR = src
 BINDIR = bin
@@ -9,7 +9,13 @@ BIN = $(BINDIR)/bfc
 SOURCES = $(SRCDIR)/bfc.c $(SRCDIR)/lexer.c $(SRCDIR)/ast.c $(SRCDIR)/parser.c
 OBJECTS = $(SOURCES:.c=.o)
 
-all: $(BIN)
+debug: CFLAGS += -g -O0
+debug: $(BIN)
+
+release: CFLAGS += -O2
+release: $(BIN)
+
+all: release
 
 $(BIN): $(OBJECTS) bin
 	$(CC) $(CFLAGS) -o $@ $(OBJECTS)
@@ -24,4 +30,4 @@ clean:
 	rm -f $(OBJECTS) $(BIN)
 
 
-.PHONY: all clean test
+.PHONY: all clean test debug release
