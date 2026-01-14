@@ -117,7 +117,6 @@ Test 14: Addition (2+2=4)
 
 ```bash
 $ ./bin/bfc ../bf/examples/add.bf --print-ast
-)$ ./bin/bfc ../bf/examples/add.bf --print-ast
 Reading source file: ../bf/examples/add.bf
 Lexing...
 Parsing...

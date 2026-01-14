@@ -194,6 +194,13 @@ Working document for tracking progress, decisions, and lessons learned while imp
 
 **Key Insight**: Premature optimization in parsing phase was architecturally wrong. Clean separation of parsing and optimization phases creates better learning experience and more maintainable codebase.
 
+### Date: 2026-01-14
+
+- Cleanup
+- gdb run
+
+
+
 ## Next Steps (When You Return)
 
 **Current Status**: ✅ Lexer, ✅ Parser, ✅ Naive AST complete
