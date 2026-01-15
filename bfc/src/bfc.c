@@ -20,7 +20,6 @@ int main(int argc, char *argv[])
         fprintf(stderr, "  -o <file>      Output file (default: a.out)\n");
         fprintf(stderr, "  --emit-llvm    Emit LLVM IR instead of executable\n");
         fprintf(stderr, "  --emit-c       Emit C code instead of executable\n");
-        fprintf(stderr, "  --print-tokens Print tokens and exit\n");
         fprintf(stderr, "  --print-ast    Print AST and exit\n");
         fprintf(stderr, "  --print-ir     Print IR and exit\n");
         return 1;
@@ -28,7 +27,6 @@ int main(int argc, char *argv[])
 
     const char *input_file = argv[1];
     const char *output_file = "a.out";
-    int print_tokens = 0;
     int print_ast = 0;
     // int emit_ir = 0;
     // int emit_llvm = 0;
@@ -42,8 +40,6 @@ int main(int argc, char *argv[])
             //     emit_llvm = 1;
             // } else if (strcmp(argv[i], "--emit-c") == 0) {
             //     emit_c = 1;
-        } else if (strcmp(argv[i], "--print-tokens") == 0) {
-            print_tokens = 1;
         } else if (strcmp(argv[i], "--print-ast") == 0) {
             print_ast = 1;
             // } else if (strcmp(argv[i], "--print-ir") == 0) {
@@ -67,17 +63,6 @@ int main(int argc, char *argv[])
         fprintf(stderr, "Error: Failed to create lexer\n");
         free(source);
         return 1;
-    }
-
-    if (print_tokens) {
-        char *tokens_str = lexer_format_tokens(lexer);
-        if (tokens_str) {
-            printf("%s\n", tokens_str);
-            free(tokens_str);
-        }
-        lexer_free(lexer);
-        free(source);
-        return 0;
     }
 
     printf("Parsing...\n");

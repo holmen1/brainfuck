@@ -24,7 +24,6 @@ typedef struct Lexer Lexer;
 Lexer *lexer_create(const char *source, int length);
 TokenType lexer_peek(Lexer *lexer);
 void lexer_next(Lexer *lexer);
-char *lexer_format_tokens(Lexer *lexer);
 void lexer_free(Lexer *lexer);
 
 #endif // LEXER_H
