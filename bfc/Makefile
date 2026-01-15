@@ -6,7 +6,7 @@ BINDIR = bin
 INCDIR = include
 
 BIN = $(BINDIR)/bfc
-SOURCES = $(SRCDIR)/bfc.c $(SRCDIR)/lexer.c $(SRCDIR)/ast.c $(SRCDIR)/parser.c
+SOURCES = $(SRCDIR)/bfc.c $(SRCDIR)/lexer.c $(SRCDIR)/ast.c $(SRCDIR)/parser.c $(SRCDIR)/ast_optimizer.c
 OBJECTS = $(SOURCES:.c=.o)
 
 debug: CFLAGS += -g -O0

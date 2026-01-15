@@ -165,3 +165,41 @@ SEQUENCE(19 children)
   MOVE_LEFT
   OUTPUT
 ```
+
+**AST Optimized**
+
+```bash
+$ ./bin/bfc ../bf/examples/add.bf --optimize --print-ast
+Reading source file: ../bf/examples/add.bf
+Lexing...
+Parsing...
+Optimizing AST...
+SEQUENCE(12 children)
+  INPUT
+  MOVE_PTR(+1)
+  INPUT
+  MOVE_PTR(-1)
+  LOOP
+    SEQUENCE(4 children)
+      MODIFY_CELL(-1)
+      MOVE_PTR(+1)
+      MODIFY_CELL(+1)
+      MOVE_PTR(-1)
+  MOVE_PTR(+2)
+  MODIFY_CELL(+6)
+  LOOP
+    SEQUENCE(4 children)
+      MODIFY_CELL(-1)
+      MOVE_PTR(+1)
+      MODIFY_CELL(+8)
+      MOVE_PTR(-1)
+  MOVE_PTR(+1)
+  LOOP
+    SEQUENCE(4 children)
+      MODIFY_CELL(-1)
+      MOVE_PTR(-2)
+      MODIFY_CELL(-1)
+      MOVE_PTR(+2)
+  MOVE_PTR(-2)
+  OUTPUT
+  ```

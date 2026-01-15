@@ -22,12 +22,19 @@ ASTNode *ast_create_node(ASTNodeType type)
     case AST_LOOP:
         node->data.loop.body = NULL;
         break;
+    case AST_MOVE_PTR:
+        node->data.offset = 0;
+        break;
+    case AST_MODIFY_CELL:
+        node->data.delta = 0;
+        break;
     case AST_MOVE_RIGHT:
     case AST_MOVE_LEFT:
     case AST_INCREMENT:
     case AST_DECREMENT:
     case AST_OUTPUT:
     case AST_INPUT:
+    case AST_CLEAR_LOOP:
         // These types don't have data
         break;
     }
@@ -60,6 +67,9 @@ void ast_free(ASTNode *node)
     case AST_DECREMENT:
     case AST_OUTPUT:
     case AST_INPUT:
+    case AST_MOVE_PTR:
+    case AST_MODIFY_CELL:
+    case AST_CLEAR_LOOP:
         // No allocated data to free
         break;
     }
@@ -107,6 +117,15 @@ static void ast_print_helper(ASTNode *node, int depth)
         break;
     case AST_INPUT:
         printf("INPUT\n");
+        break;
+    case AST_MOVE_PTR:
+        printf("MOVE_PTR(%+d)\n", node->data.offset);
+        break;
+    case AST_MODIFY_CELL:
+        printf("MODIFY_CELL(%+d)\n", node->data.delta);
+        break;
+    case AST_CLEAR_LOOP:
+        printf("CLEAR_LOOP\n");
         break;
     case AST_SEQUENCE:
         printf("SEQUENCE(%d children)\n", node->data.sequence.count);

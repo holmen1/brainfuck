@@ -203,34 +203,115 @@ Working document for tracking progress, decisions, and lessons learned while imp
 
 - Cleanup, remove token print
 
+**AST Optimizer Implementation**
+
+- **Extended AST node types** (bfc/include/ast.h)
+  - Added `AST_MOVE_PTR` - combines consecutive `>>>` into single node with offset field
+  - Added `AST_MODIFY_CELL` - combines consecutive `+++` into single node with delta field
+  - Added `AST_CLEAR_LOOP` - recognizes `[-]` and `[+]` clear loop patterns
+  - Added union fields: `int offset` for MOVE_PTR, `int delta` for MODIFY_CELL
+
+- **Created ast_optimizer.c** (bfc/src/ast_optimizer.c)
+  - `ast_optimize()` - main entry point for optimization passes
+  - `optimize_sequence()` - combines consecutive operations in sequences
+    - Accumulates multiple `MOVE_RIGHT`/`MOVE_LEFT` → single `MOVE_PTR(offset)`
+    - Accumulates multiple `INCREMENT`/`DECREMENT` → single `MODIFY_CELL(delta)`
+    - Eliminates zero-effect operations (e.g., `++-` cancels to nothing)
+  - `is_clear_loop()` - detects `[-]` and `[+]` patterns, replaces with `CLEAR_LOOP`
+  - Recursively optimizes nested loop bodies
+
+- **Updated ast.c**
+  - Extended `ast_create_node()` to initialize offset/delta fields
+  - Extended `ast_free()` to handle new node types (no extra cleanup needed)
+  - Extended `ast_print()` to display optimized nodes with values:
+    - `MOVE_PTR(+3)` shows net pointer movement
+    - `MODIFY_CELL(-5)` shows net cell modification
+    - `CLEAR_LOOP` indicates recognized pattern
+
+- **Updated bfc.c**
+  - Added `--optimize` command-line flag
+  - Optimization runs after parsing, before code generation
+  - Can be combined with `--print-ast` to visualize optimizations
+
+- **Build system updated**
+  - Makefile includes ast_optimizer.c compilation
+  - All tests passing with zero warnings
+
+**Optimization Results**:
+- `hello_world.bf`: 66 nodes → 31 nodes (53% reduction)
+- `+++[-].` example: 5 nodes → 3 nodes with clear loop detection
+- No behavioral changes - purely representation optimization
+
+**Educational Benefits**:
+- Shows separation between parsing and optimization phases
+- Demonstrates common compiler optimization techniques
+- Easy to visualize with `--print-ast` before/after comparison
+- Clean architecture: optimizer is independent module
+
 
 
 ## Next Steps (When You Return)
 
-**Current Status**: ✅ Lexer, ✅ Parser, ✅ Naive AST complete
+**Current Status**: ✅ Lexer, ✅ Parser, ✅ Naive AST, ✅ AST Optimizer complete
 
-**Option A: Add AST Optimization Passes (Recommended for Learning)**
-1. **Create `bfc/src/ast_optimizer.c`**
-   - `optimize_consecutive_operations()` - fold `+++` → `MODIFY_CELL(+3)` 
-   - `optimize_movement_operations()` - fold `>>>` → `MOVE_PTR(+3)`
-   - `optimize_clear_loops()` - recognize `[-]` patterns
-2. **Add `--print-optimized-ast` flag to see before/after**
-3. **Update main pipeline**: naive AST → optimized AST → IR
-4. **Educational value**: Shows how compiler optimizations work in practice
+**Recommended Path: IR Generation → Assembly Backend (Pedagogical)**
 
-**Option B: Jump to IR Generation (Faster Path to Working Compiler)**  
+The natural progression for a minimal, educational compiler:
+
+### Phase 1: IR Generation (Foundation Layer)
+**Why IR first**: Decouples high-level AST from low-level assembly details. Makes code generation tractable.
+
 1. **Create `bfc/include/ir.h` and `bfc/src/ir.c`**
-   - Define `IRInstruction` types: `IR_ADD_PTR`, `IR_ADD_CELL`, `IR_OUTPUT`, etc.
-   - `ast_to_ir()` function converts naive AST to linear instruction stream
-2. **Add `--print-ir` flag for debugging**
-3. **Next: Pick backend (LLVM IR recommended)**
+   - Define simple `IRInstruction` types:
+     - `IR_ADD_PTR(offset)` - pointer arithmetic
+     - `IR_ADD_CELL(delta)` - cell modification  
+     - `IR_OUTPUT` / `IR_INPUT` - I/O operations
+     - `IR_LOOP_START` / `IR_LOOP_END` - control flow with labels
+   - Keep it minimal: just enough to represent BF semantics
+   
+2. **Implement `ast_to_ir(ast)` converter**
+   - Linear instruction stream (easy to emit assembly from)
+   - Flatten nested sequences into single list
+   - Assign numeric labels to loops for jumping
+   
+3. **Add `--print-ir` flag for debugging**
+   - Verify IR correctness before moving to assembly
+   - Should be human-readable
 
-**Option C: Quick Win - Implement AST Interpreter**
-- Add `ast_execute()` function to directly run from AST 
-- Good for testing AST correctness before moving to IR/codegen
-- Single afternoon task
+**Educational value**: Shows how compilers bridge abstract syntax to concrete instructions. IR is the Rosetta Stone between parsing and code generation.
 
-**Recommended**: Go with **Option A** (AST optimization) - it's pedagogically valuable and shows the natural compiler progression. Each optimization pass can be implemented and tested independently.
+### Phase 2: x86-64 Assembly Backend (Target Goal)
+**Why x86-64**: Native code, minimal dependencies, runs directly on Linux.
+
+1. **Create `bfc/src/codegen_asm.c`**
+   - Generate `.s` assembly file from IR
+   - Minimal runtime: array on stack/heap, syscalls for I/O
+   - Linux syscalls: `write(1, buf, 1)` for output, `read(0, buf, 1)` for input
+   
+2. **Key mappings**:
+   - Memory array: `[rbp - N]` or heap pointer in `r12`
+   - Cell pointer: register `r13`
+   - `IR_ADD_PTR` → `add r13, offset`
+   - `IR_ADD_CELL` → `add byte [r13], delta`
+   - `IR_OUTPUT` → syscall wrapper
+   - Loops → label + `cmp`/`jz`/`jnz` instructions
+
+3. **Build pipeline**:
+   ```bash
+   ./bfc program.bf -o program.s    # Generate assembly
+   gcc -o program program.s          # Assemble and link
+   ./program                         # Run!
+   ```
+
+**Educational value**: See exactly how high-level constructs map to CPU instructions. Understand stack frames, registers, syscalls, and ELF binaries.
+
+### Alternative Quick Win: AST Interpreter (Optional)
+- Add `ast_execute()` to run optimized AST directly
+- Good for validating optimizer correctness
+- ~100 lines of code
+- Can delay this until after assembly backend works
+
+**Time estimate**: IR generation (1-2 sessions), Assembly backend (2-3 sessions)
 
 
 
