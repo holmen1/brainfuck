@@ -4,9 +4,9 @@
 #include "lexer.h"
 #include "ast.h"
 #include "parser.h"
+#include "ir.h"
 
 /* TODO: Add includes for other compiler phases */
-/* #include "ir.h" */
 /* #include "codegen_llvm.h" */
 
 static char *read_file(const char *filename, int *length);
@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
         fprintf(stderr, "  --emit-c       Emit C code instead of executable\n");
         fprintf(stderr, "  --print-ast    Print AST and exit\n");
         fprintf(stderr, "  --optimize     Optimize AST before code generation\n");
-        fprintf(stderr, "  --print-ir     Print IR and exit\n");
+        fprintf(stderr, "  --print-ir     Print IR and exit (NEW!)\n");
         return 1;
     }
 
@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
     const char *output_file = "a.out";
     int print_ast = 0;
     int optimize = 0;
-    // int emit_ir = 0;
+    int print_ir = 0;
     // int emit_llvm = 0;
     // int emit_c = 0;
 
@@ -46,8 +46,8 @@ int main(int argc, char *argv[])
             print_ast = 1;
         } else if (strcmp(argv[i], "--optimize") == 0) {
             optimize = 1;
-            // } else if (strcmp(argv[i], "--print-ir") == 0) {
-            //     emit_ir = 1;
+        } else if (strcmp(argv[i], "--print-ir") == 0) {
+            print_ir = 1;
         } else {
             fprintf(stderr, "Error: Unknown option '%s'\n", argv[i]);
             return 1;
@@ -97,78 +97,42 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    /* TODO: Phase 4: IR Generation
-     *
-     * IRProgram *ir = ir_from_ast(ast);
-     * if (!ir) {
-     *     fprintf(stderr, "Error: IR generation failed\n");
-     *     ast_free(ast);
-     *     lexer_free(lexer);
-     *     free(source);
-     *     return 1;
-     * }
-     */
+    /* Phase 4: IR Generation */
     printf("Generating IR...\n");
-    fprintf(stderr, "TODO: IR generation not implemented\n");
+    IRProgram *ir = ir_from_ast(ast);
+    if (!ir) {
+        fprintf(stderr, "Error: IR generation failed\n");
+        ast_free(ast);
+        lexer_free(lexer);
+        free(source);
+        return 1;
+    }
 
-    /* TODO: if (emit_ir) {
-     *     ir_print(ir);
-     *     ir_free(ir);
-     *     ast_free(ast);
-     *     lexer_free(lexer);
-     *     free(source);
-     *     return 0;
-     * }
-     */
+    if (print_ir) {
+        ir_print(ir);
+        ir_free(ir);
+        ast_free(ast);
+        lexer_free(lexer);
+        free(source);
+        return 0;
+    }
 
-    /* TODO: Phase 5: Optimization (optional)
-     *
-     * ir_optimize(ir);
-     */
-    printf("Optimizing IR...\n");
-    fprintf(stderr, "TODO: Optimization not implemented\n");
-
-    /* TODO: Phase 6: Code Generation
+    /* TODO: Phase 5: Code Generation (LLVM IR / Assembly / C)
      *
      * Choose backend:
      * - LLVM IR (recommended)
      * - C code
      * - x86-64 assembly
-     * - ARM64 assembly
      */
-    printf("Generating code...\n");
-    fprintf(stderr, "TODO: Code generation not implemented\n");
-
-    /* TODO: if (emit_llvm) {
-     *     FILE *out = fopen(output_file, "w");
-     *     if (!out) {
-     *         fprintf(stderr, "Error: Cannot open output file '%s'\n",
-     * output_file); ir_free(ir); ast_free(ast); lexer_free(lexer);
-     *         free(source);
-     *         return 1;
-     *     }
-     *     codegen_llvm(ir, out);
-     *     fclose(out);
-     *     printf("Generated LLVM IR: %s\n", output_file);
-     *
-     *     // Compile with clang if not just emitting IR
-     *     if (!emit_llvm) {
-     *         char cmd[512];
-     *         snprintf(cmd, sizeof(cmd), "clang -O2 %s -o %s", output_file,
-     * output_file); if (system(cmd) != 0) { fprintf(stderr, "Error: Failed to
-     * compile LLVM IR\n"); return 1;
-     *         }
-     *     }
-     * }
-     */
+    fprintf(stderr, "TODO: Code generation not implemented yet\n");
+    fprintf(stderr, "Use --print-ir to see the generated IR\n");
 
     /* Cleanup */
-    /* TODO: ir_free(ir); */
-    /* TODO: ast_free(ast); */
+    ir_free(ir);
+    ast_free(ast);
     lexer_free(lexer);
     free(source);
 
-    printf("Compilation successful!\n");
     return 0;
 }
 

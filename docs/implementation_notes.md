@@ -250,6 +250,56 @@ Working document for tracking progress, decisions, and lessons learned while imp
 
 
 
+### Date: 2026-01-16
+
+**IR (Intermediate Representation) Implementation**
+
+- **Created IR layer** - Linear instruction stream between AST and code generation
+  - `bfc/include/ir.h` - IR data structures and API
+  - `bfc/src/ir.c` - IR generation and manipulation
+  
+- **IR Instruction Types**
+  - `IR_ADD_PTR(operand)` - Pointer arithmetic: `ptr += operand`
+  - `IR_ADD_CELL(operand)` - Cell modification: `*ptr += operand`
+  - `IR_OUTPUT` - Output current cell
+  - `IR_INPUT` - Input to current cell
+  - `IR_LOOP_START(label)` - Begin loop with unique label
+  - `IR_LOOP_END(label)` - End loop, jump back if non-zero
+  - `IR_SET_ZERO` - Optimized clear loop pattern
+
+- **Key Design Decisions**
+  - **Linear representation**: Array of instructions (easier to emit code from than tree)
+  - **Label-based loops**: Each loop gets unique numeric ID for jump targets
+  - **Direct AST mapping**: Converts both naive and optimized AST nodes
+  - **Dynamic array**: Grows as needed, starts at 128 instruction capacity
+
+- **AST to IR Conversion** (`ir_from_ast`)
+  - Recursive tree traversal with flattening
+  - Maps all AST node types (naive and optimized) to IR instructions
+  - Sequences are flattened into linear instruction stream
+  - Nested loops get unique labels via `next_label` counter
+  - `AST_CLEAR_LOOP` → `IR_SET_ZERO` (optimization preserved)
+
+- **Updated bfc.c**
+  - Added `--print-ir` flag for debugging
+  - IR generation runs after AST optimization
+  - Pipeline: Source → Lexer → Parser → AST → [Optimizer] → IR → [Code Gen]
+
+- **Testing Results** (hello_world.bf)
+  - Naive AST → 106 IR instructions
+  - Optimized AST → 59 IR instructions (44% reduction!)
+  - Clear loop pattern preserved: `[-]` → `SET_ZERO`
+  - Loop labels correctly assigned (0, 1, 2, etc.)
+
+**Educational Value**:
+- Shows how compilers bridge high-level AST to low-level code generation
+- IR is platform-independent (can target LLVM, assembly, C, etc.)
+- Linear form makes code generation tractable
+- Demonstrates separation of concerns (parsing → optimization → IR → codegen)
+
+**Next Steps**: Code generation backend (LLVM IR, x86-64 assembly, or C)
+
+
 ## Next Steps (When You Return)
 
 **Current Status**: ✅ Lexer, ✅ Parser, ✅ Naive AST, ✅ AST Optimizer complete
