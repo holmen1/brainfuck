@@ -244,3 +244,29 @@ IR Program (27 instructions):
   26: OUTPUT
 ========================================
 ```
+
+**ASM**
+
+``bash
+$ ./bfc/bin/bfc /tmp/simple.bf -o /tmp/test.s
+Reading source file: /tmp/simple.bf
+Lexing...
+Parsing...
+Generating IR...
+Generating x86-64 assembly: /tmp/test.s
+Assembly written to /tmp/test.s
+$ cat /tmp/test.s
+    .text
+    .globl main
+main:
+    # Minimal test: print 'H' (ASCII 72)
+    mov $72, %edi      # Load 'H' into first arg
+    call putchar        # Call putchar('H')
+    
+    # Return 0
+    xor %eax, %eax    # eax = 0 (return value)
+    ret
+$ gcc /tmp/test.s -o /tmp/test
+$ /tmp/test
+H
+```

@@ -5,9 +5,7 @@
 #include "ast.h"
 #include "parser.h"
 #include "ir.h"
-
-/* TODO: Add includes for other compiler phases */
-/* #include "codegen_llvm.h" */
+#include "codegen_asm.h"
 
 static char *read_file(const char *filename, int *length);
 
@@ -117,15 +115,31 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    /* TODO: Phase 5: Code Generation (LLVM IR / Assembly / C)
-     *
-     * Choose backend:
-     * - LLVM IR (recommended)
-     * - C code
-     * - x86-64 assembly
-     */
-    fprintf(stderr, "TODO: Code generation not implemented yet\n");
-    fprintf(stderr, "Use --print-ir to see the generated IR\n");
+    /* Phase 5: Code Generation */
+    printf("Generating x86-64 assembly: %s\n", output_file);
+    
+    FILE *out = fopen(output_file, "w");
+    if (!out) {
+        fprintf(stderr, "Error: Cannot open output file '%s'\n", output_file);
+        ir_free(ir);
+        ast_free(ast);
+        lexer_free(lexer);
+        free(source);
+        return 1;
+    }
+    
+    if (codegen_asm(ir, out) != 0) {
+        fprintf(stderr, "Error: Code generation failed\n");
+        fclose(out);
+        ir_free(ir);
+        ast_free(ast);
+        lexer_free(lexer);
+        free(source);
+        return 1;
+    }
+    
+    fclose(out);
+    printf("Assembly written to %s\n", output_file);
 
     /* Cleanup */
     ir_free(ir);

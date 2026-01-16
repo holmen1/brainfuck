@@ -297,14 +297,24 @@ Working document for tracking progress, decisions, and lessons learned while imp
 - Linear form makes code generation tractable
 - Demonstrates separation of concerns (parsing → optimization → IR → codegen)
 
-**Next Steps**: Code generation backend (LLVM IR, x86-64 assembly, or C)
+**x86-64 Assembly Backend - Initial Setup**
 
+- **Created minimal assembly code generator** (bfc/src/codegen_asm.c)
+  - `codegen_asm()` - Entry point for IR → assembly conversion
+  - Initial implementation: Hardcoded minimal test program
+  - Emits x86-64 AT&T syntax assembly (.s file)
+  - Proof of concept: Prints 'H' character using putchar
 
-## Next Steps (When You Return)
+- **Minimal assembly structure**:
+  ```asm
+  .text
+  .globl main
+  main:
+      mov $72, %edi      # Load 'H' into first arg
+      call putchar        # Call putchar('H')
+      xor %eax, %eax     # Return 0
+      ret
 
-**Current Status**: ✅ Lexer, ✅ Parser, ✅ Naive AST, ✅ AST Optimizer complete
-
-**Recommended Path: IR Generation → Assembly Backend (Pedagogical)**
 
 The natural progression for a minimal, educational compiler:
 
