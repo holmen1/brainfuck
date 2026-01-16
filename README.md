@@ -202,4 +202,45 @@ SEQUENCE(12 children)
       MOVE_PTR(+2)
   MOVE_PTR(-2)
   OUTPUT
-  ```
+```
+
+**LLVM IR**
+
+```bash
+$ ./bfc/bin/bfc bf/examples/add.bf --optimize --print-ir
+Reading source file: bf/examples/add.bf
+Lexing...
+Parsing...
+Optimizing AST...
+Generating IR...
+IR Program (27 instructions):
+========================================
+   0: INPUT
+   1: ADD_PTR +1
+   2: INPUT
+   3: ADD_PTR -1
+   4: LOOP_START (label 0)
+   5: ADD_CELL -1
+   6: ADD_PTR +1
+   7: ADD_CELL +1
+   8: ADD_PTR -1
+   9: LOOP_END (label 0)
+  10: ADD_PTR +2
+  11: ADD_CELL +6
+  12: LOOP_START (label 1)
+  13: ADD_CELL -1
+  14: ADD_PTR +1
+  15: ADD_CELL +8
+  16: ADD_PTR -1
+  17: LOOP_END (label 1)
+  18: ADD_PTR +1
+  19: LOOP_START (label 2)
+  20: ADD_CELL -1
+  21: ADD_PTR -2
+  22: ADD_CELL -1
+  23: ADD_PTR +2
+  24: LOOP_END (label 2)
+  25: ADD_PTR -2
+  26: OUTPUT
+========================================
+```
