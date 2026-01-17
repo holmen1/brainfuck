@@ -19,7 +19,6 @@ int main(int argc, char *argv[])
         fprintf(stderr, "  --emit-llvm    Emit LLVM IR instead of executable\n");
         fprintf(stderr, "  --emit-c       Emit C code instead of executable\n");
         fprintf(stderr, "  --print-ast    Print AST and exit\n");
-        fprintf(stderr, "  --optimize     Optimize AST before code generation\n");
         fprintf(stderr, "  --print-ir     Print IR and exit (NEW!)\n");
         return 1;
     }
@@ -27,7 +26,6 @@ int main(int argc, char *argv[])
     const char *input_file = argv[1];
     const char *output_file = "a.out";
     int print_ast = 0;
-    int optimize = 0;
     int print_ir = 0;
     // int emit_llvm = 0;
     // int emit_c = 0;
@@ -42,8 +40,6 @@ int main(int argc, char *argv[])
             //     emit_c = 1;
         } else if (strcmp(argv[i], "--print-ast") == 0) {
             print_ast = 1;
-        } else if (strcmp(argv[i], "--optimize") == 0) {
-            optimize = 1;
         } else if (strcmp(argv[i], "--print-ir") == 0) {
             print_ir = 1;
         } else {
@@ -76,23 +72,21 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    if (optimize) {
-        printf("Optimizing AST...\n");
-        ast = ast_optimize(ast);
-        if (!ast) {
-            fprintf(stderr, "Error: Optimization failed\n");
-            lexer_free(lexer);
-            free(source);
-            return 1;
-        }
-    }
-
     if (print_ast) {
         ast_print(ast);
         ast_free(ast);
         lexer_free(lexer);
         free(source);
         return 0;
+    }
+
+    printf("Optimizing AST...\n");
+    ast = ast_optimize(ast);
+    if (!ast) {
+        fprintf(stderr, "Error: Optimization failed\n");
+        lexer_free(lexer);
+        free(source);
+        return 1;
     }
 
     /* Phase 4: IR Generation */

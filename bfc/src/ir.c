@@ -179,30 +179,6 @@ static int ast_node_to_ir(ASTNode *node, IRProgram *program, int *next_label)
             }
             break;
             
-        case AST_MOVE_RIGHT:
-            if (ir_append(program, IR_ADD_PTR, 1) != 0) {
-                return -1;
-            }
-            break;
-            
-        case AST_MOVE_LEFT:
-            if (ir_append(program, IR_ADD_PTR, -1) != 0) {
-                return -1;
-            }
-            break;
-            
-        case AST_INCREMENT:
-            if (ir_append(program, IR_ADD_CELL, 1) != 0) {
-                return -1;
-            }
-            break;
-            
-        case AST_DECREMENT:
-            if (ir_append(program, IR_ADD_CELL, -1) != 0) {
-                return -1;
-            }
-            break;
-            
         case AST_OUTPUT:
             if (ir_append(program, IR_OUTPUT, 0) != 0) {
                 return -1;
