@@ -1,27 +1,101 @@
 #include "codegen_asm.h"
 #include <stdio.h>
 
+#define BF_MEMORY_SIZE 30000
+
 /**
  * Generate x86-64 assembly from IR program
  * 
- * For now: Just emit a minimal "hello" that prints 'H'
- * This proves our assembly generation and build chain works!
+ * Step 2: Add memory allocation and register setup
+ * - Allocate 30000 bytes on stack for BF memory
+ * - r12: base pointer to memory array
+ * - r13: current cell offset (starts at 0)
  */
 int codegen_asm(const IRProgram *program, FILE *output)
 {
     /* Suppress unused parameter warning for now */
     (void)program;
     
-    /* Emit minimal x86-64 assembly */
+    /* Assembly prologue */
     fprintf(output, "    .text\n");
     fprintf(output, "    .globl main\n");
     fprintf(output, "main:\n");
-    fprintf(output, "    # Minimal test: print 'H' (ASCII 72)\n");
-    fprintf(output, "    mov $72, %%edi      # Load 'H' into first arg\n");
-    fprintf(output, "    call putchar        # Call putchar('H')\n");
+    fprintf(output, "    # Prologue: set up stack frame\n");
+    fprintf(output, "    push %%rbp\n");
+    fprintf(output, "    mov %%rsp, %%rbp\n");
     fprintf(output, "    \n");
-    fprintf(output, "    # Return 0\n");
-    fprintf(output, "    xor %%eax, %%eax    # eax = 0 (return value)\n");
+    
+    /* Allocate BF memory on stack */
+    fprintf(output, "    # Allocate %d bytes for BF memory\n", BF_MEMORY_SIZE);
+    fprintf(output, "    sub $%d, %%rsp\n", BF_MEMORY_SIZE);
+    fprintf(output, "    \n");
+    
+    /* Set up registers */
+    fprintf(output, "    # Initialize registers\n");
+    fprintf(output, "    mov %%rsp, %%r12     # r12 = base of memory array\n");
+    fprintf(output, "    xor %%r13, %%r13     # r13 = 0 (cell offset)\n");
+    fprintf(output, "    \n");
+    
+    /* Initialize memory to zero (optional but good practice) */
+    fprintf(output, "    # Clear memory to zero\n");
+    fprintf(output, "    mov %%rsp, %%rdi     # rdi = destination (memory base)\n");
+    fprintf(output, "    xor %%eax, %%eax     # eax = 0 (byte to fill)\n");
+    fprintf(output, "    mov $%d, %%ecx       # ecx = count\n", BF_MEMORY_SIZE);
+    fprintf(output, "    rep stosb            # Repeat: store al at [rdi], inc rdi\n");
+    fprintf(output, "    \n");
+    
+    /* Reset registers after memset */
+    fprintf(output, "    mov %%rbp, %%rax\n");
+    fprintf(output, "    sub $%d, %%rax\n", BF_MEMORY_SIZE);
+    fprintf(output, "    mov %%rax, %%r12     # r12 = base of memory array\n");
+    fprintf(output, "    xor %%r13, %%r13     # r13 = 0 (cell offset)\n");
+    fprintf(output, "    \n");
+    
+    /* Emit IR instructions */
+    fprintf(output, "    # Brainfuck program instructions\n");
+    for (int i = 0; i < program->count; i++) {
+        IRInstruction instr = program->instructions[i];
+        
+        switch (instr.opcode) {
+            case IR_ADD_PTR:
+                /* Move pointer: ptr += operand */
+                fprintf(output, "    # IR_ADD_PTR %+d\n", instr.operand);
+                if (instr.operand > 0) {
+                    fprintf(output, "    add $%d, %%r13\n", instr.operand);
+                } else if (instr.operand < 0) {
+                    fprintf(output, "    sub $%d, %%r13\n", -instr.operand);
+                }
+                fprintf(output, "    \n");
+                break;
+                
+            case IR_ADD_CELL:
+                /* Modify cell: *ptr += operand */
+                fprintf(output, "    # IR_ADD_CELL %+d\n", instr.operand);
+                /* Load current cell value */
+                fprintf(output, "    movzbl (%%r12,%%r13), %%eax  # Load byte from mem[r12+r13] into eax\n");
+                /* Add/subtract the operand */
+                if (instr.operand > 0) {
+                    fprintf(output, "    add $%d, %%eax\n", instr.operand);
+                } else if (instr.operand < 0) {
+                    fprintf(output, "    sub $%d, %%eax\n", -instr.operand);
+                }
+                /* Store back (only low byte) */
+                fprintf(output, "    movb %%al, (%%r12,%%r13)    # Store byte back to mem[r12+r13]\n");
+                fprintf(output, "    \n");
+                break;
+                
+            default:
+                /* Not yet implemented */
+                fprintf(output, "    # TODO: Opcode %d not implemented\n", instr.opcode);
+                break;
+        }
+    }
+    
+    /* Epilogue: clean up and return */
+    fprintf(output, "    # Epilogue: restore stack and return\n");
+    fprintf(output, "    mov %%rbp, %%rsp     # Restore stack pointer\n");
+    fprintf(output, "    pop %%rbp\n");
+    fprintf(output, "    xor %%eax, %%eax     # Return 0\n");
     fprintf(output, "    ret\n");
     
     return 0;

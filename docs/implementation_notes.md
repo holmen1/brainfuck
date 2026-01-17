@@ -314,6 +314,85 @@ Working document for tracking progress, decisions, and lessons learned while imp
       call putchar        # Call putchar('H')
       xor %eax, %eax     # Return 0
       ret
+  ```
+
+- **Integration with compiler** (bfc/src/bfc.c)
+  - Added `#include "codegen_asm.h"`
+  - Phase 5: Opens output file and calls codegen_asm()
+  - Writes assembly to file specified with `-o` flag
+  - Proper error handling and resource cleanup
+
+- **Build system updated** (bfc/Makefile)
+  - Added codegen_asm.c to SOURCES
+  - Compiles and links successfully
+
+- **Testing**:
+  ```bash
+  ./bfc/bin/bfc program.bf -o test.s    # Generate assembly
+  gcc test.s -o test                     # Assemble and link
+  ./test                                 # Run (prints 'H')
+  ```
+
+**Status**: Foundation in place for full IR translation.
+
+### Date: 2026-01-17
+
+**Compiler Configuration - Optimization Made Default**
+
+- **Updated bfc.c** - Optimization now runs by default before IR generation
+  - Removed `--optimize` flag requirement
+
+**x86-64 Assembly Backend - Memory Allocation and IR Translation**
+
+- **Memory Allocation and Stack Frame Setup**
+  - Allocate 30,000 bytes on stack for BF memory array
+  - Proper prologue/epilogue with frame pointer management
+  - Memory initialization using `rep stosb` (fast zero-fill)
+  - Stack alignment maintained for function calls
+
+- **Register Assignment**
+  - `%r12` = Base pointer to BF memory array (callee-saved)
+  - `%r13` = Current cell offset (0-29999) (callee-saved)
+  - `%eax/%al` = Temporary for load/store operations
+  - `%edi` = Function argument register (for putchar/getchar)
+
+- **IR Instruction Translation Loop**
+  - Iterate through all IR instructions
+  - Switch statement dispatches to handler for each opcode
+  - Comments in assembly show original IR instruction
+
+- **Implemented IR_ADD_PTR (Pointer Movement)**
+  - Translates to: `add $N, %r13` or `sub $N, %r13`
+  - Handles positive and negative offsets
+  - Optimized pointer movements work correctly (e.g., `>>>` → `ADD_PTR +3`)
+  - Tested: `>>><` → `add $2, %r13` ✓
+
+- **Implemented IR_ADD_CELL (Cell Modification)**
+  - Load: `movzbl (%r12,%r13), %eax` - Zero-extend byte to 32-bit
+  - Modify: `add $N, %eax` or `sub $N, %eax`
+  - Store: `movb %al, (%r12,%r13)` - Write back low byte
+  - Handles byte overflow naturally (wraps at 256)
+  - Tested: `+++>++<-` produces correct assembly ✓
+
+- **Generated Assembly Quality**
+  - Clean, readable output with comments
+  - Proper AT&T syntax (`%` for registers, `$` for immediates)
+  - Memory addressing: `(%r12,%r13)` = base+offset
+  - Each IR instruction generates 3-4 assembly instructions
+
+- **Testing Results**
+  - Pointer test (`>>><`): Compiles and runs successfully
+  - Cell modification test (`+++>++<-`): Compiles and runs successfully
+  - Programs execute with clean exit (code 0)
+  - No segfaults or memory errors
+
+**Educational Observations**:
+- x86-64 addressing modes are powerful: `(%base,%offset)` in one instruction
+- `movzbl` (zero-extend) prevents sign-extension issues with byte values
+- Callee-saved registers (`%r12`, `%r13`) persist across function calls
+- `rep stosb` is hardware-accelerated memset (very fast)
+
+**Next Steps**: Implement IR_OUTPUT (putchar), IR_INPUT (getchar), IR_LOOP_START/END, IR_SET_ZERO
 
 
 The natural progression for a minimal, educational compiler:
