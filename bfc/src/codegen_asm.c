@@ -84,6 +84,34 @@ int codegen_asm(const IRProgram *program, FILE *output)
                 fprintf(output, "    \n");
                 break;
                 
+            case IR_OUTPUT:
+                /* Output: putchar(*ptr) */
+                fprintf(output, "    # IR_OUTPUT\n");
+                fprintf(output, "    movzbl (%%r12,%%r13), %%edi  # Load byte into first argument\n");
+                fprintf(output, "    call putchar                 # Print character\n");
+                fprintf(output, "    \n");
+                break;
+                
+            case IR_LOOP_START:
+                /* Loop start: if (*ptr == 0) jump to matching end */
+                fprintf(output, "    # IR_LOOP_START (label %d)\n", instr.operand);
+                fprintf(output, "loop_%d_start:\n", instr.operand);
+                fprintf(output, "    movzbl (%%r12,%%r13), %%eax  # Load current cell\n");
+                fprintf(output, "    test %%eax, %%eax            # Test if zero\n");
+                fprintf(output, "    jz loop_%d_end               # Jump to end if zero\n", instr.operand);
+                fprintf(output, "    \n");
+                break;
+                
+            case IR_LOOP_END:
+                /* Loop end: if (*ptr != 0) jump back to matching start */
+                fprintf(output, "    # IR_LOOP_END (label %d)\n", instr.operand);
+                fprintf(output, "    movzbl (%%r12,%%r13), %%eax  # Load current cell\n");
+                fprintf(output, "    test %%eax, %%eax            # Test if zero\n");
+                fprintf(output, "    jnz loop_%d_start            # Jump to start if non-zero\n", instr.operand);
+                fprintf(output, "loop_%d_end:\n", instr.operand);
+                fprintf(output, "    \n");
+                break;
+                
             default:
                 /* Not yet implemented */
                 fprintf(output, "    # TODO: Opcode %d not implemented\n", instr.opcode);

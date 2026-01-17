@@ -374,6 +374,27 @@ Working document for tracking progress, decisions, and lessons learned while imp
   - Handles byte overflow naturally (wraps at 256)
   - Tested: `+++>++<-` produces correct assembly ✓
 
+- **Implemented IR_OUTPUT (Character Output)**
+  - Load byte: `movzbl (%r12,%r13), %edi` - Into first argument register
+  - Call: `call putchar` - Print character
+  - Uses x86-64 System V calling convention (first arg in %edi)
+
+- **Implemented IR_LOOP_START and IR_LOOP_END (Control Flow)**
+  - Loop structure with labeled jumps:
+    ```asm
+    loop_N_start:
+        movzbl (%r12,%r13), %eax   # Load current cell
+        test %eax, %eax             # Set zero flag
+        jz loop_N_end               # Skip loop if zero
+        # ... loop body ...
+        movzbl (%r12,%r13), %eax   # Load again
+        test %eax, %eax             # Test
+        jnz loop_N_start            # Repeat if non-zero
+    loop_N_end:
+    ```
+  - Each loop gets unique label ID from IR
+  - Handles nested loops correctly (each has own label)
+
 - **Generated Assembly Quality**
   - Clean, readable output with comments
   - Proper AT&T syntax (`%` for registers, `$` for immediates)
@@ -381,18 +402,20 @@ Working document for tracking progress, decisions, and lessons learned while imp
   - Each IR instruction generates 3-4 assembly instructions
 
 - **Testing Results**
-  - Pointer test (`>>><`): Compiles and runs successfully
-  - Cell modification test (`+++>++<-`): Compiles and runs successfully
+  - Loop test: Multiplication (2×3=6) works correctly
+  - **hello_world.bf: Full compilation and execution successful!**
   - Programs execute with clean exit (code 0)
   - No segfaults or memory errors
 
 **Educational Observations**:
 - x86-64 addressing modes are powerful: `(%base,%offset)` in one instruction
 - `movzbl` (zero-extend) prevents sign-extension issues with byte values
+- `test reg, reg` is efficient way to check for zero (sets flags)
+- Conditional jumps (`jz`, `jnz`) make loops straightforward
 - Callee-saved registers (`%r12`, `%r13`) persist across function calls
 - `rep stosb` is hardware-accelerated memset (very fast)
 
-**Next Steps**: Implement IR_OUTPUT (putchar), IR_INPUT (getchar), IR_LOOP_START/END, IR_SET_ZERO
+**Remaining Work**: IR_INPUT (getchar), IR_SET_ZERO optimization
 
 
 The natural progression for a minimal, educational compiler:

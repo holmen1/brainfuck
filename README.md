@@ -204,7 +204,7 @@ SEQUENCE(12 children)
   OUTPUT
 ```
 
-**LLVM IR**
+**IR**
 
 ```bash
 $ ./bfc/bin/bfc bf/examples/add.bf --optimize --print-ir
@@ -247,26 +247,25 @@ IR Program (27 instructions):
 
 **ASM**
 
-``bash
-$ ./bfc/bin/bfc /tmp/simple.bf -o /tmp/test.s
-Reading source file: /tmp/simple.bf
+```bash
+$ make release
+gcc -std=c99 -Wall -Wextra -Iinclude -O2 -c -o src/bfc.o src/bfc.c
+gcc -std=c99 -Wall -Wextra -Iinclude -O2 -c -o src/lexer.o src/lexer.c
+gcc -std=c99 -Wall -Wextra -Iinclude -O2 -c -o src/ast.o src/ast.c
+gcc -std=c99 -Wall -Wextra -Iinclude -O2 -c -o src/parser.o src/parser.c
+gcc -std=c99 -Wall -Wextra -Iinclude -O2 -c -o src/ast_optimizer.o src/ast_optimizer.c
+gcc -std=c99 -Wall -Wextra -Iinclude -O2 -c -o src/ir.o src/ir.c
+gcc -std=c99 -Wall -Wextra -Iinclude -O2 -c -o src/codegen_asm.o src/codegen_asm.c
+gcc -std=c99 -Wall -Wextra -Iinclude -O2 -o bin/bfc src/bfc.o src/lexer.o src/ast.o src/parser.o src/ast_optimizer.o src/ir.o src/codegen_asm.o
+$ ./bin/bfc ../bf/examples/hello_world.bf -o /tmp/hello.s
+Reading source file: ../bf/examples/hello_world.bf
 Lexing...
 Parsing...
+Optimizing AST...
 Generating IR...
-Generating x86-64 assembly: /tmp/test.s
-Assembly written to /tmp/test.s
-$ cat /tmp/test.s
-    .text
-    .globl main
-main:
-    # Minimal test: print 'H' (ASCII 72)
-    mov $72, %edi      # Load 'H' into first arg
-    call putchar        # Call putchar('H')
-    
-    # Return 0
-    xor %eax, %eax    # eax = 0 (return value)
-    ret
-$ gcc /tmp/test.s -o /tmp/test
-$ /tmp/test
-H
+Generating x86-64 assembly: /tmp/hello.s
+Assembly written to /tmp/hello.s
+$ gcc /tmp/hello.s -o /tmp/hello
+$ /tmp/hello
+Hello World!
 ```
