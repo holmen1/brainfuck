@@ -1,8 +1,8 @@
 CC      = gcc
-CFLAGS  = -std=c99 -Wall -Wextra -Iinclude -D_POSIX_C_SOURCE=200809L
+CFLAGS  = -std=c99 -Wall -Wextra -Iinclude
 BIN     = bin/bfc
 SOURCES = $(wildcard src/*.c)
-OBJECTS = $(SOURCES:.c=.o)
+OBJECTS = $(patsubst src/%.c,build/%.o,$(SOURCES))
 
 all: CFLAGS += -O2
 all: $(BIN)
@@ -13,10 +13,10 @@ debug: $(BIN)
 $(BIN): $(OBJECTS) | bin
 	$(CC) $(CFLAGS) -o $@ $(OBJECTS)
 
-src/%.o: src/%.c
+build/%.o: src/%.c | build
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-bin:
+bin build:
 	@mkdir -p $@
 
 clean:

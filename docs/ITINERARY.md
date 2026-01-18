@@ -696,10 +696,9 @@ brainfuck/
 │   └── bin/
 │       └── bfc
 │
-├── bin/                         # Compiled BF executables
-│   └── .gitkeep
-├── build/                       # Intermediate assembly files
-│   └── .gitkeep
+├── examples/                 # BF files
+│   ├── add.bf
+│   └── hello_world.bf
 │
 └── docs/
     ├── ITINERARY.md

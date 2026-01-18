@@ -6,7 +6,7 @@ echo ""
 
 # Test 1: Valid file returns success (0)
 echo "Test 1: Reading valid file (hello_world.bf)"
-./bin/bf examples/hello_world.bf > /dev/null && echo "✓ PASS" || exit 1
+./bin/bf ../examples/hello_world.bf > /dev/null && echo "✓ PASS" || exit 1
 
 # Test 2: Simple output test
 echo "Test 2: Output single character (+++++++++.)"
@@ -86,7 +86,7 @@ echo "=== Addition Program Tests ==="
 
 # Test 14: Addition 2+2=4
 echo "Test 14: Addition (2+2=4)"
-RESULT=$(echo -n '22' | ./bin/bf examples/add.bf 2>/dev/null | od -An -tx1 | tr -d ' ')
+RESULT=$(echo -n '22' | ./bin/bf ../examples/add.bf 2>/dev/null | od -An -tx1 | tr -d ' ')
 [ "$RESULT" = "34" ] && echo "✓ PASS (output: '4')" || echo "✗ FAIL (got: $RESULT, expected: 34)"
 
 echo ""

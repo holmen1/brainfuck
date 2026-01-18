@@ -19,19 +19,19 @@ The brainfuck interpreter knows the following instructions:
 
 ### Hello World
 ```bash
-$ cat examples/hello_world.bf
+$ cat ../examples/hello_world.bf
 ++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.
 ```
 ```bash
-$ ./bin/bf ./examples/hello_world.bf
+$ ./bin/bf ../examples/hello_world.bf
 Hello World!
 ```
 
 ### 2 + 2 = 4
 ```bash
-$ cat examples/add.bf
+$ cat ../examples/add.bf
 ,>,<[->+<]>>++++++[ - >++++++++< ]>[ - << - >> ]<< .
-$ ./bin/bf examples/add.bf
+$ ./bin/bf ../examples/add.bf
 22
 4
 ```

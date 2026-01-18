@@ -17,8 +17,8 @@ Generates:
 ### Hello World
 
 ```bash
-$ ./bfc/bin/bfc bf/examples/hello_world.bf 
-Reading source file: bf/examples/hello_world.bf
+$ ./bin/bfc ../examples/hello_world.bf 
+Reading source file: ../examples/hello_world.bf
 Lexing...
 Parsing...
 Optimizing AST...
@@ -35,7 +35,7 @@ Hello World!
 ### Addition with Input
 
 ```bash
-$ ./bfc/bin/bfc bf/examples/add.bf 
+$ ./bin/bfc ../examples/add.bf 
 ...
 Success! Executable: bin/add
 
@@ -48,8 +48,8 @@ $ echo "35" | ./bin/add
 ### View unoptimized AST
 
 ```bash
-$ ./bfc/bin/bfc bf/examples/hello_world.bf --print-ast
-Reading source file: bf/examples/hello_world.bf
+$ ./bin/bfc bf/examples/hello_world.bf --print-ast
+Reading source file: ../examples/hello_world.bf
 Lexing...
 Parsing...
 SEQUENCE(66 children)
@@ -75,8 +75,8 @@ SEQUENCE(66 children)
 ### View IR (Intermediate Representation)
 
 ```bash
-$ ./bfc/bin/bfc bf/examples/hello_world.bf --print-ir
-Reading source file: bf/examples/hello_world.bf
+$ ./bin/bfc ../examples/hello_world.bf --print-ir
+Reading source file: ../examples/hello_world.bf
 Lexing...
 Parsing...
 Optimizing AST...

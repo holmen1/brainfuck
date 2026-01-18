@@ -44,8 +44,8 @@ bin/
 obj/
 
 # Exceptions to ignore rules
-!build/add.s
-!build/hello_world.s
+!bfc/build/add.s
+!bfc/build/hello_world.s
 
 # Test outputs
 tests/output/
