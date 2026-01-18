@@ -43,6 +43,10 @@ build/
 bin/
 obj/
 
+# Exceptions to ignore rules
+!build/add.s
+!build/hello_world.s
+
 # Test outputs
 tests/output/
 *.log
