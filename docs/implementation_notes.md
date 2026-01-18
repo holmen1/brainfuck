@@ -471,6 +471,48 @@ Source.bf → Lexer → Parser → AST → Optimizer → IR → x86-64 Asm → E
 
 **🎉 MILESTONE: Full working Brainfuck compiler with native code generation! 🎉**
 
+### Addendum:
+
+**Compiler UX Improvements - Direct Binary Output**
+
+- **Integrated gcc invocation into bfc**
+  - Compiler now calls `gcc` automatically after generating assembly
+  - Single command: `./bfc/bin/bfc program.bf` → ready-to-run executable
+  - Eliminates manual two-step compilation process
+
+- **Directory Structure**
+  - `build/` - Intermediate assembly files (`.s`)
+  - `bin/` - Final BF executables (native binaries)
+
+- **Simplified Command-Line Interface**
+  - Removed `-o` output flag (was confusing)
+  - Output name always derived from input: `program.bf` → `bin/program`
+  - Assembly intermediate: `build/program.s`
+  - Only debug flags remain: `--print-ast`, `--print-ir`
+
+- **Code Cleanup**
+  - Removed all external dependencies: no `libgen.h`, no `basename()`, no `strdup()`
+  - Pure standard C library (`string.h` only for path manipulation)
+  - Removed `-D_POSIX_C_SOURCE` flag (no longer needed)
+  - Simple `strrchr()` for path parsing, `strncpy()` for string handling
+
+- **Build System Polish**
+  - Makefile uses `wildcard` for automatic source discovery
+  - Aligned variable definitions for readability
+  - Order-only prerequisites for directory dependencies
+  - Clean, minimal 21-line Makefile
+
+**Usage**:
+```bash
+./bfc/bin/bfc bf/examples/hello_world.bf
+# Generates:
+#   build/hello_world.s  (assembly intermediate)
+#   bin/hello_world      (executable)
+
+./bin/hello_world
+# Output: Hello World!
+```
+
 **Educational Value Achieved**:
 - Understood full compilation pipeline from source to machine code
 - Learned x86-64 assembly, calling conventions, stack management

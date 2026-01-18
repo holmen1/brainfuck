@@ -1,5 +1,5 @@
 CC      = gcc
-CFLAGS  = -std=c99 -Wall -Wextra -Iinclude
+CFLAGS  = -std=c99 -Wall -Wextra -Iinclude -D_POSIX_C_SOURCE=200809L
 BIN     = bin/bfc
 SOURCES = $(wildcard src/*.c)
 OBJECTS = $(SOURCES:.c=.o)

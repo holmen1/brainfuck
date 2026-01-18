@@ -8,6 +8,7 @@
 #include "codegen_asm.h"
 
 static char *read_file(const char *filename, int *length);
+static int compile_assembly(const char *asm_file, const char *output_file);
 
 int main(int argc, char *argv[])
 {
@@ -15,30 +16,18 @@ int main(int argc, char *argv[])
     if (argc < 2) {
         fprintf(stderr, "Usage: %s <input.bf> [options]\n", argv[0]);
         fprintf(stderr, "Options:\n");
-        fprintf(stderr, "  -o <file>      Output file (default: a.out)\n");
-        fprintf(stderr, "  --emit-llvm    Emit LLVM IR instead of executable\n");
-        fprintf(stderr, "  --emit-c       Emit C code instead of executable\n");
         fprintf(stderr, "  --print-ast    Print AST and exit\n");
-        fprintf(stderr, "  --print-ir     Print IR and exit (NEW!)\n");
+        fprintf(stderr, "  --print-ir     Print IR and exit\n");
         return 1;
     }
 
     const char *input_file = argv[1];
-    const char *output_file = "a.out";
     int print_ast = 0;
     int print_ir = 0;
-    // int emit_llvm = 0;
-    // int emit_c = 0;
 
     /* Parse remaining arguments */
     for (int i = 2; i < argc; i++) {
-        if (strcmp(argv[i], "-o") == 0 && i + 1 < argc) {
-            output_file = argv[++i];
-            // } else if (strcmp(argv[i], "--emit-llvm") == 0) {
-            //     emit_llvm = 1;
-            // } else if (strcmp(argv[i], "--emit-c") == 0) {
-            //     emit_c = 1;
-        } else if (strcmp(argv[i], "--print-ast") == 0) {
+        if (strcmp(argv[i], "--print-ast") == 0) {
             print_ast = 1;
         } else if (strcmp(argv[i], "--print-ir") == 0) {
             print_ir = 1;
@@ -109,12 +98,33 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    /* Phase 5: Code Generation */
-    printf("Generating x86-64 assembly: %s\n", output_file);
+    /* Determine output paths from input filename */
+    char asm_file[512];
+    char exe_file[512];
+    char name[256];
     
-    FILE *out = fopen(output_file, "w");
+    /* Extract basename from input file */
+    const char *last_slash = strrchr(input_file, '/');
+    const char *base = last_slash ? last_slash + 1 : input_file;
+    
+    /* Copy and remove .bf extension if present */
+    strncpy(name, base, sizeof(name) - 1);
+    name[sizeof(name) - 1] = '\0';
+    
+    char *dot = strrchr(name, '.');
+    if (dot && strcmp(dot, ".bf") == 0) {
+        *dot = '\0';
+    }
+    
+    snprintf(asm_file, sizeof(asm_file), "build/%s.s", name);
+    snprintf(exe_file, sizeof(exe_file), "bin/%s", name);
+
+    /* Phase 5: Code Generation */
+    printf("Generating x86-64 assembly: %s\n", asm_file);
+    
+    FILE *out = fopen(asm_file, "w");
     if (!out) {
-        fprintf(stderr, "Error: Cannot open output file '%s'\n", output_file);
+        fprintf(stderr, "Error: Cannot open output file '%s'\n", asm_file);
         ir_free(ir);
         ast_free(ast);
         lexer_free(lexer);
@@ -133,7 +143,20 @@ int main(int argc, char *argv[])
     }
     
     fclose(out);
-    printf("Assembly written to %s\n", output_file);
+    printf("Assembly written to %s\n", asm_file);
+    
+    /* Phase 6: Compile to executable */
+    printf("Compiling to executable: %s\n", exe_file);
+    if (compile_assembly(asm_file, exe_file) != 0) {
+        fprintf(stderr, "Error: Compilation failed\n");
+        ir_free(ir);
+        ast_free(ast);
+        lexer_free(lexer);
+        free(source);
+        return 1;
+    }
+    
+    printf("Success! Executable: %s\n", exe_file);
 
     /* Cleanup */
     ir_free(ir);
@@ -183,5 +206,22 @@ static char *read_file(const char *filename, int *length)
     *length = file_size;
     fclose(file);
     return buffer;
+}
+
+/**
+ * Compile assembly file to executable using gcc
+ */
+static int compile_assembly(const char *asm_file, const char *output_file)
+{
+    char command[1024];
+    snprintf(command, sizeof(command), "gcc -o %s %s", output_file, asm_file);
+    
+    int result = system(command);
+    if (result != 0) {
+        fprintf(stderr, "Error: gcc command failed\n");
+        return -1;
+    }
+    
+    return 0;
 }
 
