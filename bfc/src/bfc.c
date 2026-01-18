@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/wait.h>
 #include "lexer.h"
 #include "ast.h"
 #include "parser.h"
@@ -99,9 +101,9 @@ int main(int argc, char *argv[])
     }
 
     /* Determine output paths from input filename */
-    char asm_file[512];
-    char exe_file[512];
-    char name[256];
+    char asm_file[64];
+    char exe_file[64];
+    char name[32];
     
     /* Extract basename from input file */
     const char *last_slash = strrchr(input_file, '/');
@@ -120,7 +122,7 @@ int main(int argc, char *argv[])
     snprintf(exe_file, sizeof(exe_file), "bin/%s", name);
 
     /* Phase 5: Code Generation */
-    printf("Generating x86-64 assembly: %s\n", asm_file);
+    printf("Generating x86-64 assembly...\n");
     
     FILE *out = fopen(asm_file, "w");
     if (!out) {
@@ -146,7 +148,7 @@ int main(int argc, char *argv[])
     printf("Assembly written to %s\n", asm_file);
     
     /* Phase 6: Compile to executable */
-    printf("Compiling to executable: %s\n", exe_file);
+    printf("Compiling to executable...\n");
     if (compile_assembly(asm_file, exe_file) != 0) {
         fprintf(stderr, "Error: Compilation failed\n");
         ir_free(ir);
@@ -213,13 +215,25 @@ static char *read_file(const char *filename, int *length)
  */
 static int compile_assembly(const char *asm_file, const char *output_file)
 {
-    char command[1024];
-    snprintf(command, sizeof(command), "gcc -o %s %s", output_file, asm_file);
-    
-    int result = system(command);
-    if (result != 0) {
-        fprintf(stderr, "Error: gcc command failed\n");
+    pid_t pid = fork();
+    if (pid == -1) {
+        perror("fork");
         return -1;
+    }
+    
+    if (pid == 0) {
+        /* Child process */
+        execl("/usr/bin/gcc", "gcc", "-o", output_file, asm_file, NULL);
+        perror("execl");
+        exit(EXIT_FAILURE);
+    } else {
+        /* Parent process */
+        int status;
+        waitpid(pid, &status, 0);
+        if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+            fprintf(stderr, "Error: gcc command failed\n");
+            return -1;
+        }
     }
     
     return 0;
