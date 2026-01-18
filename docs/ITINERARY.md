@@ -352,10 +352,8 @@ typedef enum {
     IR_INPUT,         // Input to current cell
     IR_LOOP_START,    // Begin loop
     IR_LOOP_END,      // End loop
-    IR_SET_ZERO,      // Optimized: set current cell to 0
-    IR_MOVE_DATA,     // Optimized: move value to offset
-    IR_SCAN_RIGHT,    // Optimized: scan for zero moving right
-    IR_SCAN_LEFT      // Optimized: scan for zero moving left
+    IR_SET_ZERO       // Optimized: set current cell to 0
+    // Note: IR_MOVE_DATA, IR_SCAN_RIGHT/LEFT are possible future optimizations
 } IROpcode;
 
 typedef struct {
@@ -384,26 +382,15 @@ void ir_free(IRProgram *program);
 
 **Optimization opportunities**:
 ```c
-// Pattern: [-] or [+] → IR_SET_ZERO
+// Pattern: [-] or [+] → IR_SET_ZERO (IMPLEMENTED)
 LOOP_START
   ADD_CELL -1
 LOOP_END
 → SET_ZERO
 
+// Future optimization ideas:
 // Pattern: [->+<] → IR_MOVE_DATA
-LOOP_START
-  ADD_PTR +1
-  ADD_CELL +1
-  ADD_PTR -1
-  ADD_CELL -1
-LOOP_END
-→ MOVE_DATA offset=1
-
-// Pattern: [>] → IR_SCAN_RIGHT
-LOOP_START
-  ADD_PTR +1
-LOOP_END
-→ SCAN_RIGHT
+// Pattern: [>] and [<] → IR_SCAN_RIGHT/LEFT
 ```
 
 ### Choosing Your Backend
@@ -412,16 +399,81 @@ Pick based on your learning goals:
 
 | Backend | Difficulty | Learning Focus | Speed |
 |---------|-----------|----------------|-------|
+| **x86-64 Asm** | Hard | Low-level systems, ISA, calling conventions | Excellent |
 | **LLVM IR** | Medium | Modern compilers, IR design, SSA | Excellent |
 | **C Code** | Easy | Quick results, portable | Good (gcc optimizes) |
-| **x86-64 Asm** | Hard | Low-level systems, ISA | Excellent |
 | **ARM64 Asm** | Hard | Different architecture | Excellent |
 
-**Recommendation**: Start with LLVM IR following the tutorial structure.
+**Note**: This project implemented x86-64 assembly for deep systems learning. LLVM IR is also excellent for learning modern compiler design.
 
 ### Step 4: Code Generation Backends
 
-#### Backend A: LLVM IR Code Generation (Recommended)
+#### Backend A: x86-64 Assembly (Implemented in this project)
+**Output**: `.s` assembly file → `gcc` → optimized executable
+
+**Why x86-64 Assembly?**
+- **Direct hardware mapping**: See exactly how BF operations become machine code
+- **No abstractions**: Understand registers, stack frames, calling conventions
+- **Systems programming**: Learn ABI, function calls, memory management
+- **Fast results**: Direct compilation with gcc
+- **Educational depth**: Maximum understanding of low-level execution
+
+**Key x86-64 Concepts**:
+1. **Registers**: `%r12` (base), `%r13` (offset), `%rax` (temp), `%rdi` (first arg)
+2. **Calling Convention**: System V ABI - arguments in registers, callee-saved registers
+3. **Stack Frames**: Prologue/epilogue, stack allocation, alignment
+4. **Memory Addressing**: `(%base,%offset)` for array indexing
+5. **Instructions**: `movb`, `add`, `sub`, `test`, `jz`, `jnz`, `call`
+
+**x86-64 Assembly Structure**:
+```asm
+    .text
+    .globl main
+main:
+    # Prologue - setup stack frame
+    pushq %rbp
+    movq %rsp, %rbp
+    subq $30000, %rsp        # Allocate 30KB for BF memory
+    
+    # Save callee-saved registers
+    pushq %r12
+    pushq %r13
+    
+    # Initialize memory base and offset
+    leaq -30000(%rbp), %r12  # r12 = base pointer
+    xorq %r13, %r13           # r13 = 0 (offset)
+    
+    # Zero memory with rep stosb
+    movq %r12, %rdi
+    movl $30000, %ecx
+    xorb %al, %al
+    rep stosb
+    
+    # BF code goes here
+    
+    # Epilogue - restore and return
+    popq %r13
+    popq %r12
+    movq %rbp, %rsp
+    popq %rbp
+    xorl %eax, %eax          # return 0
+    ret
+```
+
+**Translation Guide**:
+```
+> → add $N, %r13
+< → sub $N, %r13
++ → movzbl (%r12,%r13), %eax; add $N, %eax; movb %al, (%r12,%r13)
+- → movzbl (%r12,%r13), %eax; sub $N, %eax; movb %al, (%r12,%r13)
+. → movzbl (%r12,%r13), %edi; call putchar
+, → call getchar; movb %al, (%r12,%r13)
+[ → movzbl (%r12,%r13), %eax; test %eax, %eax; jz loop_N_end
+] → movzbl (%r12,%r13), %eax; test %eax, %eax; jnz loop_N_start
+[-] → movb $0, (%r12,%r13)  # Optimized clear loop
+```
+
+#### Backend B: LLVM IR Code Generation (Alternative)
 **Output**: `.ll` text file → `clang` → optimized executable
 
 **Why LLVM IR?**
@@ -515,7 +567,7 @@ label %loop_0_end:
 - [My First Language Frontend with LLVM Tutorial](https://llvm.org/docs/tutorial/)
 - Study: `clang -S -emit-llvm simple.c` to see real IR
 
-#### Backend B: C Code Generation
+#### Backend C: C Code Generation (Alternative)
 
 **Simplest approach**: Generate C code from IR, compile with gcc
 - Faster development
@@ -543,35 +595,7 @@ int main() {
 void codegen_c_from_ir(IRProgram *program, FILE *output);
 ```
 
-#### Backend C: x86-64 Assembly
-**Output**: NASM/GAS syntax assembly → link with `gcc`/`ld`
-
-**Translation strategy**:
-```
-> → add rax, 1        (or lea rax, [rax+1])
-< → sub rax, 1
-+ → inc byte [rax]
-- → dec byte [rax]
-. → mov rdi, 1; mov rsi, rax; mov rdx, 1; mov rax, 1; syscall
-, → mov rdi, 0; mov rsi, rax; mov rdx, 1; mov rax, 0; syscall
-[ → cmp byte [rax], 0; je .L_end_X
-] → cmp byte [rax], 0; jne .L_start_X
-```
-
-**Implementation steps**:
-1. Generate assembly text file (`output.asm`)
-2. Allocate 30,000-byte BSS section for memory
-3. Set up registers (rax = data pointer)
-4. Translate each BF command to asm
-5. Assemble: `nasm -f elf64 output.asm -o output.o`
-6. Link: `gcc output.o -o program -nostartfiles` or use `ld`
-
-**Code generator** (`src/codegen_x64.c`):
-```c
-void codegen_x64_from_ir(IRProgram *program, FILE *output);
-```
-
-#### Backend D: ARM64 Assembly
+#### Backend D: ARM64 Assembly (Future option)
 Good for Raspberry Pi and modern ARM systems
 - Similar concepts to x86-64 but different syntax
 - More registers, cleaner instruction set
@@ -660,23 +684,22 @@ brainfuck/
 │   │   ├── ast.h
 │   │   ├── parser.h
 │   │   ├── ir.h
-│   │   ├── codegen_llvm.h
-│   │   ├── codegen_c.h
-│   │   └── codegen_x64.h
+│   │   └── codegen_asm.h     # x86-64 assembly backend
 │   ├── src/
 │   │   ├── bfc.c
 │   │   ├── lexer.c
 │   │   ├── ast.c
+│   │   ├── ast_optimizer.c   # Separate optimization pass
 │   │   ├── parser.c
 │   │   ├── ir.c
-│   │   ├── codegen_llvm.c
-│   │   ├── codegen_c.c
-│   │   └── codegen_x64.c
-│   └── tests/
-│       ├── test_lexer.c
-│       ├── test_parser.c
-│       ├── test_ir.c
-│       └── test_codegen.c
+│   │   └── codegen_asm.c     # x86-64 assembly code generation
+│   └── bin/
+│       └── bfc
+│
+├── bin/                         # Compiled BF executables
+│   └── .gitkeep
+├── build/                       # Intermediate assembly files
+│   └── .gitkeep
 │
 └── docs/
     ├── ITINERARY.md
@@ -685,32 +708,30 @@ brainfuck/
 
 ### Step 6: Optimizations
 
-**IR-level optimizations** (apply during IR generation or as separate pass):
-1. **Constant folding**: Combine `+++` → ADD_CELL +3 (do in parser)
-2. **Clear loops**: Recognize `[-]` and `[+]` → SET_ZERO instruction
-3. **Copy loops**: Optimize `[->+<]` → MOVE_DATA instruction
-4. **Scan loops**: Optimize `[>]` and `[<]` → SCAN_RIGHT/LEFT instructions
-5. **Dead code elimination**: Remove operations after unconditional loops
-6. **Pointer offset tracking**: Combine movements with operations
+**AST-level optimizations** (implemented in ast_optimizer.c):
+1. **Consecutive operations**: Combine `+++` → `MODIFY_CELL(+3)`, `>>>` → `MOVE_PTR(+3)`
+2. **Clear loops**: Recognize `[-]` and `[+]` → `CLEAR_LOOP` node
 
-**LLVM's optimizations** (if using LLVM IR with `-O2`):
+**IR-level optimizations** (applied during AST to IR conversion):
+1. **Clear loops**: `CLEAR_LOOP` AST node → `IR_SET_ZERO` instruction
+2. **Direct mapping**: Optimized AST nodes directly to IR
+
+**Future optimization opportunities**:
+- Copy loops: `[->+<]` → `MOVE_DATA` instruction
+- Scan loops: `[>]` and `[<]` → `SCAN_RIGHT/LEFT` instructions
 - Dead code elimination
-- Constant propagation
-- Loop unrolling
-- Register allocation
-- Instruction scheduling
-- And 100+ more passes!
+- Constant propagation at IR level
 
-**Assembly-level optimizations** (if hand-coding x86-64):
-1. `+++` → `add byte [rax], 3`
-2. `[-]` → `mov byte [rax], 0`
-3. `[>]` → `repne scasb` (scan for zero)
-4. Use `lea` for pointer arithmetic
+**Assembly-level optimizations** (implemented in codegen_asm.c):
+1. Consecutive operations: `+++` → `add $3, %eax` (via AST optimization)
+2. Clear loops: `[-]` → `movb $0, (%r12,%r13)` (single instruction)
+3. Efficient register usage: callee-saved registers for state
+4. Hardware memory zeroing: `rep stosb` for initialization
 
 ### Step 7: Testing & Benchmarking
 
 **Testing strategy**:
-1. Unit tests for each compiler phase (lexer, parser, IR, codegen)
+1. Manual testing with `--print-ast` and `--print-ir` flags
 2. Integration tests: compile sample programs, compare output with interpreter
 3. Validation: ensure compiled programs produce identical output
 
@@ -773,13 +794,14 @@ time ./mandelbrot_compiled > /dev/null
 ### Compiler Path (Following LLVM Tutorial Structure)
 - [x] **Milestone 5**: Implement lexer - tokenize BF source
 - [x] **Milestone 6**: Implement parser - build AST from tokens
-- [ ] **Milestone 7**: Generate IR from AST
-- [ ] **Milestone 8**: Implement basic code generation (LLVM IR or C)
-- [ ] **Milestone 9**: Compile "Hello World" to executable
-- [ ] **Milestone 10**: Implement control flow (loops with brackets)
-- [ ] **Milestone 11**: Add IR optimizations (clear loops, copy loops, scan loops)
-- [ ] **Milestone 12**: Benchmark: 50x+ speedup vs interpreter
-- [ ] **Milestone 13**: (Optional) Try a different backend (x86-64, ARM64)
+- [x] **Milestone 7**: Generate IR from AST
+- [x] **Milestone 8**: Implement x86-64 assembly code generation
+- [x] **Milestone 9**: Compile "Hello World" to executable
+- [x] **Milestone 10**: Implement control flow (loops with brackets)
+- [x] **Milestone 11**: Add IR optimizations (clear loops, consecutive operations)
+- [x] **Milestone 12**: Full compiler with automatic gcc invocation
+- [ ] **Milestone 13**: (Optional) Benchmark interpreter vs compiler performance
+- [ ] **Milestone 14**: (Optional) Try a different backend (ARM64, RISC-V, C)
 
 
 ## Build & Run Commands
@@ -841,37 +863,39 @@ make test
 
 **Phase 4.2 - Parser & AST (4-6 hours)**:
 1. Design AST node types in `src/ast.h`
-2. Implement parser in `src/parser.c`
-3. Parse tokens into AST
-4. Combine consecutive operations during parsing
-5. Validate bracket matching
-6. Test: print AST for sample programs
+2. Implement naive parser in `src/parser.c` (1:1 token to node mapping)
+3. Parse tokens into AST tree structure
+4. Validate bracket matching
+5. Test: print AST for sample programs
+6. **Separate optimization pass**: Implement `ast_optimizer.c`
+   - Combine consecutive operations: `+++` → `MODIFY_CELL(+3)`
+   - Recognize clear loops: `[-]` → `CLEAR_LOOP`
+   - Keep parsing and optimization separate for clarity
 
 **Phase 4.3 - IR Generation (3-4 hours)**:
 1. Define IR instruction set in `src/ir.h`
-2. Convert AST to linear IR
-3. Test: print IR for sample programs
+2. Convert AST to linear IR in `src/ir.c`
+3. Flatten tree structure into sequential instructions
+4. Assign unique labels to loops
+5. Test: print IR with `--print-ir` flag
 
-**Phase 4.4 - IR Optimization (4-6 hours)**:
-1. Implement pattern matching for idioms
-2. Optimize `[-]` to SET_ZERO
-3. Optimize `[->+<]` to MOVE_DATA
-4. Optimize `[>]` and `[<]` to SCAN operations
-5. Test: verify output correctness
+**Phase 4.4 - Code Generation (8-12 hours)**:
+1. Choose backend: x86-64 assembly for deep systems learning
+2. Implement code generator in `src/codegen_asm.c`
+3. Generate prologue: stack frame, memory allocation, register setup
+4. Translate each IR instruction to assembly
+5. Generate epilogue: cleanup and return
+6. Test each IR instruction type incrementally
+7. Get "Hello World" working end-to-end
+8. Implement remaining instructions (INPUT, SET_ZERO)
 
-**Phase 4.5 - Code Generation (6-10 hours)**:
-1. Choose backend: LLVM IR (recommended) or C (easier)
-2. Implement code generator in `src/codegen_*.c`
-3. Generate setup/teardown code
-4. Translate IR instructions to target code
-5. Get "Hello World" working end-to-end
-
-**Phase 4.6 - Integration & Testing (3-4 hours)**:
+**Phase 4.5 - Integration & Polish (2-3 hours)**:
 1. Wire all phases together in `src/bfc.c`
-2. Add command-line argument parsing
-3. Test with all example programs
-4. Benchmark: expect 50-100x speedup over interpreter
-5. (Optional) Try a different backend
+2. Integrate gcc invocation for automatic compilation
+3. Add command-line flags: `--print-ast`, `--print-ir`
+4. Set up build/ and bin/ directory structure
+5. Test with all example programs
+6. Verify compiled output matches interpreter
 
 ## Next Steps
 

@@ -19,253 +19,28 @@ The brainfuck interpreter knows the following instructions:
 |.|Outputs ASCII code under pointer|     
 |,|Reads char and stores ASCII under ptr|
 
-## Inerpreter
+## Hello World
 
-### Hello World
-```bash
-$ cat examples/hello_world.bf
+This cryptic string:
+```brainfuck
 ++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.
 ```
+
+Compiles to a native x86-64 executable:
 ```bash
-$ ./bin/bf ./examples/hello_world.bf
+$ ./bfc/bin/bfc bf/examples/hello_world.bf
+Success! Executable: bin/hello_world
+
+$ ./bin/hello_world
 Hello World!
 ```
 
-### 2 + 2 = 4
-```bash
-$ cat examples/add.bf
-,>,<[->+<]>>++++++[ - >++++++++< ]>[ - << - >> ]<< .
-$ ./bin/bf examples/add.bf
-22
-4
-```
-Program purpose: Reads two numbers as ASCII characters, adds them (interpreting them as digit characters), and outputs the sum as an ASCII character.
+## Interpreter
 
-Breakdown:
+Simple brainfuck interpreter with 30,000 byte memory array. See [bf/README.md](bf/README.md) for usage and examples.
 
-`,>,<` - Read two input characters into cells 0 and 1, then move back to cell 0
+## Compiler
 
-`[->+<]` - Loop that transfers the value in cell 0 to cell 1:
-
-Decrement cell 0  
-Move right and increment cell 1  
-Move left and repeat until cell 0 is zero  
-Result: cell 0 = 0, cell 1 contains the sum  
-`>>` - Move to cell 2
-
-`++++++[ - >++++++++< ]` - Multiply 6 × 8 = 48 in cell 2 (this is the ASCII offset for character '0'):
-
-Set cell 2 to 6  
-Loop: decrement cell 2, move right, add 8 to cell 3, move left  
-After loop: cell 2 = 0, cell 3 = 48  
-`>[ - << - >> ]` - Subtract 48 from cell 1 (the sum):
-
-Move to cell 3 (which holds 48)  
-While cell 3 > 0: decrement cell 3, move left twice, decrement cell 1, move right twice  
-Result: cell 1 now contains the numeric difference  
-`<< .` - Move back to cell 1 and output the character
-
-Example: If you input '2' and '2' (ASCII 50), it calculates (50 + 50) - 48 = 52, which is ASCII '4'
+Optimizing compiler generating native x86-64 executables. See [bfc/README.md](bfc/README.md) for usage and examples.
 
 
-### Build and test
-
-```bash
-$ make
-gcc -std=c99 -Wall -Wextra -O2 -Iinclude src/bf.c -o bin/bf
-$ make test
-Running tests...
-=== Brainfuck Test Suite ===
-
-Test 1: Reading valid file (hello_world.bf)
-✓ PASS
-Test 2: Output single character (+++++++++.)
-✓ PASS (output: ASCII 9)
-Test 3: Pointer movement (>+.)
-✓ PASS (output: ASCII 1)
-Test 4: Multiple increments
-✓ PASS (output: ASCII 95, 96)
-Test 5: Simple loop (++[>+<-]>.)
-✓ PASS (output: ASCII 2)
-Test 6: Loop multiplication (+++[>++<-]>.)
-✓ PASS (output: ASCII 6)
-Test 7: Nested loops (++[>++[>++<-]<-]>>.)
-✓ PASS (output: ASCII 8)
-
-=== Bracket Mismatch Tests ===
-Test 8: Missing closing bracket ([++)
-✓ PASS (exit code: 1)
-Test 9: Missing opening bracket (++])
-✓ PASS (exit code: 1)
-Test 10: Multiple missing closing brackets ([[++)
-✓ PASS (exit code: 2)
-Test 11: Multiple missing opening brackets (++]])
-✓ PASS (exit code: 2)
-Test 12: Mixed mismatches ([[])
-✓ PASS (exit code: 1)
-Test 13: Properly balanced brackets ([]++.)
-✓ PASS (exit code: 0, output: ASCII 2)
-
-=== Addition Program Tests ===
-Test 14: Addition (2+2=4)
-✓ PASS (output: '4')
-```
-
-## Compiler (work in progress)
-
-**Print AST**
-
-```bash
-$ ./bin/bfc ../bf/examples/add.bf --print-ast
-Reading source file: ../bf/examples/add.bf
-Lexing...
-Parsing...
-SEQUENCE(19 children)
-  INPUT
-  MOVE_RIGHT
-  INPUT
-  MOVE_LEFT
-  LOOP
-    SEQUENCE(4 children)
-      DECREMENT
-      MOVE_RIGHT
-      INCREMENT
-      MOVE_LEFT
-  MOVE_RIGHT
-  MOVE_RIGHT
-  INCREMENT
-  INCREMENT
-  INCREMENT
-  INCREMENT
-  INCREMENT
-  INCREMENT
-  LOOP
-    SEQUENCE(11 children)
-      DECREMENT
-      MOVE_RIGHT
-      INCREMENT
-      INCREMENT
-      INCREMENT
-      INCREMENT
-      INCREMENT
-      INCREMENT
-      INCREMENT
-      INCREMENT
-      MOVE_LEFT
-  MOVE_RIGHT
-  LOOP
-    SEQUENCE(6 children)
-      DECREMENT
-      MOVE_LEFT
-      MOVE_LEFT
-      DECREMENT
-      MOVE_RIGHT
-      MOVE_RIGHT
-  MOVE_LEFT
-  MOVE_LEFT
-  OUTPUT
-```
-
-**AST Optimized**
-
-```bash
-$ ./bin/bfc ../bf/examples/add.bf --optimize --print-ast
-Reading source file: ../bf/examples/add.bf
-Lexing...
-Parsing...
-Optimizing AST...
-SEQUENCE(12 children)
-  INPUT
-  MOVE_PTR(+1)
-  INPUT
-  MOVE_PTR(-1)
-  LOOP
-    SEQUENCE(4 children)
-      MODIFY_CELL(-1)
-      MOVE_PTR(+1)
-      MODIFY_CELL(+1)
-      MOVE_PTR(-1)
-  MOVE_PTR(+2)
-  MODIFY_CELL(+6)
-  LOOP
-    SEQUENCE(4 children)
-      MODIFY_CELL(-1)
-      MOVE_PTR(+1)
-      MODIFY_CELL(+8)
-      MOVE_PTR(-1)
-  MOVE_PTR(+1)
-  LOOP
-    SEQUENCE(4 children)
-      MODIFY_CELL(-1)
-      MOVE_PTR(-2)
-      MODIFY_CELL(-1)
-      MOVE_PTR(+2)
-  MOVE_PTR(-2)
-  OUTPUT
-```
-
-**IR**
-
-```bash
-$ ./bfc/bin/bfc bf/examples/add.bf --optimize --print-ir
-Reading source file: bf/examples/add.bf
-Lexing...
-Parsing...
-Optimizing AST...
-Generating IR...
-IR Program (27 instructions):
-========================================
-   0: INPUT
-   1: ADD_PTR +1
-   2: INPUT
-   3: ADD_PTR -1
-   4: LOOP_START (label 0)
-   5: ADD_CELL -1
-   6: ADD_PTR +1
-   7: ADD_CELL +1
-   8: ADD_PTR -1
-   9: LOOP_END (label 0)
-  10: ADD_PTR +2
-  11: ADD_CELL +6
-  12: LOOP_START (label 1)
-  13: ADD_CELL -1
-  14: ADD_PTR +1
-  15: ADD_CELL +8
-  16: ADD_PTR -1
-  17: LOOP_END (label 1)
-  18: ADD_PTR +1
-  19: LOOP_START (label 2)
-  20: ADD_CELL -1
-  21: ADD_PTR -2
-  22: ADD_CELL -1
-  23: ADD_PTR +2
-  24: LOOP_END (label 2)
-  25: ADD_PTR -2
-  26: OUTPUT
-========================================
-```
-
-**ASM**
-
-```bash
-$ make release
-gcc -std=c99 -Wall -Wextra -Iinclude -O2 -c -o src/bfc.o src/bfc.c
-gcc -std=c99 -Wall -Wextra -Iinclude -O2 -c -o src/lexer.o src/lexer.c
-gcc -std=c99 -Wall -Wextra -Iinclude -O2 -c -o src/ast.o src/ast.c
-gcc -std=c99 -Wall -Wextra -Iinclude -O2 -c -o src/parser.o src/parser.c
-gcc -std=c99 -Wall -Wextra -Iinclude -O2 -c -o src/ast_optimizer.o src/ast_optimizer.c
-gcc -std=c99 -Wall -Wextra -Iinclude -O2 -c -o src/ir.o src/ir.c
-gcc -std=c99 -Wall -Wextra -Iinclude -O2 -c -o src/codegen_asm.o src/codegen_asm.c
-gcc -std=c99 -Wall -Wextra -Iinclude -O2 -o bin/bfc src/bfc.o src/lexer.o src/ast.o src/parser.o src/ast_optimizer.o src/ir.o src/codegen_asm.o
-$ ./bin/bfc ../bf/examples/hello_world.bf -o /tmp/hello.s
-Reading source file: ../bf/examples/hello_world.bf
-Lexing...
-Parsing...
-Optimizing AST...
-Generating IR...
-Generating x86-64 assembly: /tmp/hello.s
-Assembly written to /tmp/hello.s
-$ gcc /tmp/hello.s -o /tmp/hello
-$ /tmp/hello
-Hello World!
-```
