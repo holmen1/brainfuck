@@ -533,12 +533,17 @@ Source.bf → Lexer → Parser → AST → Optimizer → IR → x86-64 Asm → E
 
 ### Specifications & Documentation
 - [Brainfuck Language Spec](https://esolangs.org/wiki/Brainfuck)
-- [LLVM Language Reference](https://llvm.org/docs/LangRef.html) (if using LLVM)
-- [x86-64 Reference](https://www.felixcloutier.com/x86/) (if using asm)
-- [Linux syscalls](https://filippo.io/linux-syscall-table/) (if using syscalls)
+- [x86-64 Reference](https://www.felixcloutier.com/x86/)
+- [System V ABI Documentation](https://wiki.osdev.org/System_V_ABI)
 
-### Helpful Examples & Tutorials
-TODO: Add links to resources you found helpful:
+### Development Tools & Assistance
+- **Claude Sonnet 4.5** (GitHub Copilot) - AI pair programming assistant
+  - Architectural guidance for compiler phases (lexer, parser, AST, IR, codegen)
+  - x86-64 assembly expertise and calling convention details
+  - Code generation patterns and optimization strategies
+  - Incremental development methodology and testing approaches
+  - Documentation and educational explanations throughout
+  - Made this pedagogical journey possible through step-by-step guidance
 
 
 ---
