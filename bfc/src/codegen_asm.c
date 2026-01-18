@@ -92,6 +92,21 @@ int codegen_asm(const IRProgram *program, FILE *output)
                 fprintf(output, "    \n");
                 break;
                 
+            case IR_INPUT:
+                /* Input: *ptr = getchar() */
+                fprintf(output, "    # IR_INPUT\n");
+                fprintf(output, "    call getchar                 # Read character (returns in eax)\n");
+                fprintf(output, "    movb %%al, (%%r12,%%r13)     # Store byte to current cell\n");
+                fprintf(output, "    \n");
+                break;
+                
+            case IR_SET_ZERO:
+                /* Optimized clear: *ptr = 0 */
+                fprintf(output, "    # IR_SET_ZERO\n");
+                fprintf(output, "    movb $0, (%%r12,%%r13)       # Set current cell to 0\n");
+                fprintf(output, "    \n");
+                break;
+                
             case IR_LOOP_START:
                 /* Loop start: if (*ptr == 0) jump to matching end */
                 fprintf(output, "    # IR_LOOP_START (label %d)\n", instr.operand);
