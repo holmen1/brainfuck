@@ -45,7 +45,7 @@ $ echo "35" | ./bin/add
 
 ## Debug Flags
 
-### View Optimized AST
+### View unoptimized AST
 
 ```bash
 $ ./bfc/bin/bfc bf/examples/hello_world.bf --print-ast
