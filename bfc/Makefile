@@ -1,33 +1,25 @@
-CC = gcc
-CFLAGS = -std=c99 -Wall -Wextra -Iinclude
-
-SRCDIR = src
-BINDIR = bin
-INCDIR = include
-
-BIN = $(BINDIR)/bfc
-SOURCES = $(SRCDIR)/bfc.c $(SRCDIR)/lexer.c $(SRCDIR)/ast.c $(SRCDIR)/parser.c $(SRCDIR)/ast_optimizer.c $(SRCDIR)/ir.c $(SRCDIR)/codegen_asm.c
+CC      = gcc
+CFLAGS  = -std=c99 -Wall -Wextra -Iinclude
+BIN     = bin/bfc
+SOURCES = $(wildcard src/*.c)
 OBJECTS = $(SOURCES:.c=.o)
+
+all: CFLAGS += -O2
+all: $(BIN)
 
 debug: CFLAGS += -g -O0
 debug: $(BIN)
 
-release: CFLAGS += -O2
-release: $(BIN)
-
-all: release
-
-$(BIN): $(OBJECTS) bin
+$(BIN): $(OBJECTS) | bin
 	$(CC) $(CFLAGS) -o $@ $(OBJECTS)
 
-$(SRCDIR)/%.o: $(SRCDIR)/%.c
+src/%.o: src/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 bin:
-	mkdir -p bin
+	@mkdir -p $@
 
 clean:
 	rm -f $(OBJECTS) $(BIN)
 
-
-.PHONY: all clean test debug release
+.PHONY: all debug clean
