@@ -10,6 +10,6 @@
  * Outputs to the given file pointer (typically a .s file)
  * Returns 0 on success, -1 on error
  */
-int codegen_asm(const IRProgram *program, FILE *output);
+int codegen_asm(const IRProgram *program, FILE *output, int debug);
 
 #endif /* CODEGEN_ASM_H */

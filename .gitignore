@@ -46,6 +46,8 @@ obj/
 # Exceptions to ignore rules
 !bfc/build/add.s
 !bfc/build/hello_world.s
+!bfc/build/add.s.debug
+!bfc/build/hello_world.s
 
 # Test outputs
 tests/output/

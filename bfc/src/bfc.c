@@ -10,7 +10,7 @@
 #include "codegen_asm.h"
 
 static char *read_file(const char *filename, int *length);
-static int compile_assembly(const char *asm_file, const char *output_file);
+static int compile_assembly(const char *asm_file, const char *output_file, int debug);
 
 int main(int argc, char *argv[])
 {
@@ -20,12 +20,14 @@ int main(int argc, char *argv[])
         fprintf(stderr, "Options:\n");
         fprintf(stderr, "  --print-ast    Print AST and exit\n");
         fprintf(stderr, "  --print-ir     Print IR and exit\n");
+        fprintf(stderr, "  --debug        Comment .s and compile with -g\n");
         return 1;
     }
 
     const char *input_file = argv[1];
     int print_ast = 0;
     int print_ir = 0;
+    int debug = 0;
 
     /* Parse remaining arguments */
     for (int i = 2; i < argc; i++) {
@@ -33,6 +35,8 @@ int main(int argc, char *argv[])
             print_ast = 1;
         } else if (strcmp(argv[i], "--print-ir") == 0) {
             print_ir = 1;
+        } else if (strcmp(argv[i], "--debug") == 0) {
+            debug = 1;
         } else {
             fprintf(stderr, "Error: Unknown option '%s'\n", argv[i]);
             return 1;
@@ -134,7 +138,7 @@ int main(int argc, char *argv[])
         return 1;
     }
     
-    if (codegen_asm(ir, out) != 0) {
+    if (codegen_asm(ir, out, debug) != 0) {
         fprintf(stderr, "Error: Code generation failed\n");
         fclose(out);
         ir_free(ir);
@@ -149,7 +153,7 @@ int main(int argc, char *argv[])
     
     /* Phase 6: Compile to executable */
     printf("Compiling to executable...\n");
-    if (compile_assembly(asm_file, exe_file) != 0) {
+    if (compile_assembly(asm_file, exe_file, debug) != 0) {
         fprintf(stderr, "Error: Compilation failed\n");
         ir_free(ir);
         ast_free(ast);
@@ -213,7 +217,7 @@ static char *read_file(const char *filename, int *length)
 /**
  * Compile assembly file to executable using gcc
  */
-static int compile_assembly(const char *asm_file, const char *output_file)
+static int compile_assembly(const char *asm_file, const char *output_file, int debug)
 {
     pid_t pid = fork();
     if (pid == -1) {
@@ -223,7 +227,10 @@ static int compile_assembly(const char *asm_file, const char *output_file)
     
     if (pid == 0) {
         /* Child process */
-        execl("/usr/bin/gcc", "gcc", "-o", output_file, asm_file, NULL);
+        if (debug)
+            execl("/usr/bin/gcc", "gcc", "-g", "-o", output_file, asm_file, NULL);
+        else
+            execl("/usr/bin/gcc", "gcc", "-o", output_file, asm_file, NULL);
         perror("execl");
         exit(EXIT_FAILURE);
     } else {
