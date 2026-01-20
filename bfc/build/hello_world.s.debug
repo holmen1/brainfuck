@@ -25,12 +25,9 @@ main:
     mov %rax, %r12
     xor %r13, %r13
     
-    # Brainfuck program instructions
+bf_program:
     # IR_ADD_CELL +8
-    movzbl (%r12,%r13), %eax
-    add $8, %eax
-    movb %al, (%r12,%r13)
-    
+    addb $8, (%r12,%r13)
     # IR_LOOP_START (label 0)
 loop_0_start:
     movzbl (%r12,%r13), %eax
@@ -39,12 +36,8 @@ loop_0_start:
     
     # IR_ADD_PTR +1
     add $1, %r13
-    
     # IR_ADD_CELL +4
-    movzbl (%r12,%r13), %eax
-    add $4, %eax
-    movb %al, (%r12,%r13)
-    
+    addb $4, (%r12,%r13)
     # IR_LOOP_START (label 1)
 loop_1_start:
     movzbl (%r12,%r13), %eax
@@ -53,44 +46,24 @@ loop_1_start:
     
     # IR_ADD_PTR +1
     add $1, %r13
-    
     # IR_ADD_CELL +2
-    movzbl (%r12,%r13), %eax
-    add $2, %eax
-    movb %al, (%r12,%r13)
-    
+    addb $2, (%r12,%r13)
     # IR_ADD_PTR +1
     add $1, %r13
-    
     # IR_ADD_CELL +3
-    movzbl (%r12,%r13), %eax
-    add $3, %eax
-    movb %al, (%r12,%r13)
-    
+    addb $3, (%r12,%r13)
     # IR_ADD_PTR +1
     add $1, %r13
-    
     # IR_ADD_CELL +3
-    movzbl (%r12,%r13), %eax
-    add $3, %eax
-    movb %al, (%r12,%r13)
-    
+    addb $3, (%r12,%r13)
     # IR_ADD_PTR +1
     add $1, %r13
-    
     # IR_ADD_CELL +1
-    movzbl (%r12,%r13), %eax
-    add $1, %eax
-    movb %al, (%r12,%r13)
-    
+    addb $1, (%r12,%r13)
     # IR_ADD_PTR -4
     sub $4, %r13
-    
     # IR_ADD_CELL -1
-    movzbl (%r12,%r13), %eax
-    sub $1, %eax
-    movb %al, (%r12,%r13)
-    
+    subb $1, (%r12,%r13)
     # IR_LOOP_END (label 1)
     movzbl (%r12,%r13), %eax
     test %eax, %eax
@@ -99,36 +72,20 @@ loop_1_end:
     
     # IR_ADD_PTR +1
     add $1, %r13
-    
     # IR_ADD_CELL +1
-    movzbl (%r12,%r13), %eax
-    add $1, %eax
-    movb %al, (%r12,%r13)
-    
+    addb $1, (%r12,%r13)
     # IR_ADD_PTR +1
     add $1, %r13
-    
     # IR_ADD_CELL +1
-    movzbl (%r12,%r13), %eax
-    add $1, %eax
-    movb %al, (%r12,%r13)
-    
+    addb $1, (%r12,%r13)
     # IR_ADD_PTR +1
     add $1, %r13
-    
     # IR_ADD_CELL -1
-    movzbl (%r12,%r13), %eax
-    sub $1, %eax
-    movb %al, (%r12,%r13)
-    
+    subb $1, (%r12,%r13)
     # IR_ADD_PTR +2
     add $2, %r13
-    
     # IR_ADD_CELL +1
-    movzbl (%r12,%r13), %eax
-    add $1, %eax
-    movb %al, (%r12,%r13)
-    
+    addb $1, (%r12,%r13)
     # IR_LOOP_START (label 2)
 loop_2_start:
     movzbl (%r12,%r13), %eax
@@ -137,7 +94,6 @@ loop_2_start:
     
     # IR_ADD_PTR -1
     sub $1, %r13
-    
     # IR_LOOP_END (label 2)
     movzbl (%r12,%r13), %eax
     test %eax, %eax
@@ -146,12 +102,8 @@ loop_2_end:
     
     # IR_ADD_PTR -1
     sub $1, %r13
-    
     # IR_ADD_CELL -1
-    movzbl (%r12,%r13), %eax
-    sub $1, %eax
-    movb %al, (%r12,%r13)
-    
+    subb $1, (%r12,%r13)
     # IR_LOOP_END (label 0)
     movzbl (%r12,%r13), %eax
     test %eax, %eax
@@ -160,28 +112,20 @@ loop_0_end:
     
     # IR_ADD_PTR +2
     add $2, %r13
-    
     # IR_OUTPUT
     movzbl (%r12,%r13), %edi
     call putchar
     
     # IR_ADD_PTR +1
     add $1, %r13
-    
     # IR_ADD_CELL -3
-    movzbl (%r12,%r13), %eax
-    sub $3, %eax
-    movb %al, (%r12,%r13)
-    
+    subb $3, (%r12,%r13)
     # IR_OUTPUT
     movzbl (%r12,%r13), %edi
     call putchar
     
     # IR_ADD_CELL +7
-    movzbl (%r12,%r13), %eax
-    add $7, %eax
-    movb %al, (%r12,%r13)
-    
+    addb $7, (%r12,%r13)
     # IR_OUTPUT
     movzbl (%r12,%r13), %edi
     call putchar
@@ -191,92 +135,67 @@ loop_0_end:
     call putchar
     
     # IR_ADD_CELL +3
-    movzbl (%r12,%r13), %eax
-    add $3, %eax
-    movb %al, (%r12,%r13)
-    
+    addb $3, (%r12,%r13)
     # IR_OUTPUT
     movzbl (%r12,%r13), %edi
     call putchar
     
     # IR_ADD_PTR +2
     add $2, %r13
-    
     # IR_OUTPUT
     movzbl (%r12,%r13), %edi
     call putchar
     
     # IR_ADD_PTR -1
     sub $1, %r13
-    
     # IR_ADD_CELL -1
-    movzbl (%r12,%r13), %eax
-    sub $1, %eax
-    movb %al, (%r12,%r13)
-    
+    subb $1, (%r12,%r13)
     # IR_OUTPUT
     movzbl (%r12,%r13), %edi
     call putchar
     
     # IR_ADD_PTR -1
     sub $1, %r13
-    
     # IR_OUTPUT
     movzbl (%r12,%r13), %edi
     call putchar
     
     # IR_ADD_CELL +3
-    movzbl (%r12,%r13), %eax
-    add $3, %eax
-    movb %al, (%r12,%r13)
-    
+    addb $3, (%r12,%r13)
     # IR_OUTPUT
     movzbl (%r12,%r13), %edi
     call putchar
     
     # IR_ADD_CELL -6
-    movzbl (%r12,%r13), %eax
-    sub $6, %eax
-    movb %al, (%r12,%r13)
-    
+    subb $6, (%r12,%r13)
     # IR_OUTPUT
     movzbl (%r12,%r13), %edi
     call putchar
     
     # IR_ADD_CELL -8
-    movzbl (%r12,%r13), %eax
-    sub $8, %eax
-    movb %al, (%r12,%r13)
-    
+    subb $8, (%r12,%r13)
     # IR_OUTPUT
     movzbl (%r12,%r13), %edi
     call putchar
     
     # IR_ADD_PTR +2
     add $2, %r13
-    
     # IR_ADD_CELL +1
-    movzbl (%r12,%r13), %eax
-    add $1, %eax
-    movb %al, (%r12,%r13)
-    
+    addb $1, (%r12,%r13)
     # IR_OUTPUT
     movzbl (%r12,%r13), %edi
     call putchar
     
     # IR_ADD_PTR +1
     add $1, %r13
-    
     # IR_ADD_CELL +2
-    movzbl (%r12,%r13), %eax
-    add $2, %eax
-    movb %al, (%r12,%r13)
-    
+    addb $2, (%r12,%r13)
     # IR_OUTPUT
     movzbl (%r12,%r13), %edi
     call putchar
     
-    # Epilogue: restore stack and return 0
+epilogue:
+    # restore stack and return 0
     mov %rbp, %rsp
     pop %rbp
     xor %eax, %eax

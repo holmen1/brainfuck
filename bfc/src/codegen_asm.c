@@ -17,7 +17,7 @@ int codegen_asm(const IRProgram *program, FILE *output, int debug)
     fprintf(output, "    .text\n");
     fprintf(output, "    .globl main\n");
     fprintf(output, "main:\n");
-    if (debug) fprintf(output, "    # Prologue: set up stack frame\n");
+    fprintf(output, "    # Prologue: set up stack frame\n");
     fprintf(output, "    push %%rbp\n");
     fprintf(output, "    mov %%rsp, %%rbp\n");
     fprintf(output, "    \n");
@@ -53,7 +53,7 @@ int codegen_asm(const IRProgram *program, FILE *output, int debug)
     fprintf(output, "    \n");
     
     /* Emit IR instructions */
-    if (debug) fprintf(output, "    # Brainfuck program instructions\n");
+    fprintf(output, "bf_program:\n");
     for (int i = 0; i < program->count; i++) {
         IRInstruction instr = program->instructions[i];
         
@@ -66,23 +66,17 @@ int codegen_asm(const IRProgram *program, FILE *output, int debug)
                 } else if (instr.operand < 0) {
                     fprintf(output, "    sub $%d, %%r13\n", -instr.operand);
                 }
-                fprintf(output, "    \n");
                 break;
                 
             case IR_ADD_CELL:
                 /* Modify cell: *ptr += operand */
                 if (debug) fprintf(output, "    # IR_ADD_CELL %+d\n", instr.operand);
-                /* Load current cell value */
-                fprintf(output, "    movzbl (%%r12,%%r13), %%eax\n");
                 /* Add/subtract the operand */
                 if (instr.operand > 0) {
-                    fprintf(output, "    add $%d, %%eax\n", instr.operand);
+                    fprintf(output, "    addb $%d, (%%r12,%%r13)\n", instr.operand);
                 } else if (instr.operand < 0) {
-                    fprintf(output, "    sub $%d, %%eax\n", -instr.operand);
+                    fprintf(output, "    subb $%d, (%%r12,%%r13)\n", -instr.operand);
                 }
-                /* Store back (only low byte) */
-                fprintf(output, "    movb %%al, (%%r12,%%r13)\n");
-                fprintf(output, "    \n");
                 break;
                 
             case IR_OUTPUT:
@@ -98,14 +92,12 @@ int codegen_asm(const IRProgram *program, FILE *output, int debug)
                 if (debug) fprintf(output, "    # IR_INPUT\n");
                 fprintf(output, "    call getchar\n");
                 fprintf(output, "    movb %%al, (%%r12,%%r13)\n");
-                fprintf(output, "    \n");
                 break;
                 
             case IR_SET_ZERO:
                 /* Optimized clear: *ptr = 0 */
                 if (debug) fprintf(output, "    # IR_SET_ZERO\n");
                 fprintf(output, "    movb $0, (%%r12,%%r13)\n");
-                fprintf(output, "    \n");
                 break;
                 
             case IR_LOOP_START:
@@ -136,7 +128,8 @@ int codegen_asm(const IRProgram *program, FILE *output, int debug)
     }
     
     /* Epilogue: clean up and return */
-    if (debug) fprintf(output, "    # Epilogue: restore stack and return 0\n");
+    fprintf(output, "epilogue:\n");
+    if (debug) fprintf(output, "    # restore stack and return 0\n");
     fprintf(output, "    mov %%rbp, %%rsp\n");
     fprintf(output, "    pop %%rbp\n");
     fprintf(output, "    xor %%eax, %%eax\n");

@@ -92,7 +92,7 @@ IR Program (59 instructions):
 ```
 
 Generated assembly: [build/hello_world.s](./build/hello_world.s)  
-Commented assembly, using `--debug`: [build/hello_world.s](./build/hello_world.s.debug)
+Commented assembly, using `--debug`: [build/hello_world.s.debug](./build/hello_world.s.debug)
 
 
 ## Build
