@@ -9,7 +9,7 @@ Brainfuck to x86-64 native code compiler with optimization.
 ```
 
 Generates:
-- `build/program.s` - x86-64 assembly (intermediate)
+- `build/program.s` - x86-64 or AArch64 assembly (intermediate)
 - `bin/program` - native executable
 
 ## Examples
@@ -17,13 +17,13 @@ Generates:
 ### Hello World
 
 ```bash
-$ ./bin/bfc ../examples/hello_world.bf 
+$ ./bin/bfc ../examples/hello_world.bf --backend x86
 Reading source file: ../examples/hello_world.bf
 Lexing...
 Parsing...
 Optimizing AST...
 Generating IR...
-Generating x86-64 assembly: build/hello_world.s
+Generating x86 assembly: build/hello_world.s
 Assembly written to build/hello_world.s
 Compiling to executable: bin/hello_world
 Success! Executable: bin/hello_world
@@ -91,8 +91,9 @@ IR Program (59 instructions):
    ...
 ```
 
-Generated assembly: [build/hello_world.s](./build/hello_world.s)  
-Commented assembly, using `--debug`: [build/hello_world.s.debug](./build/hello_world.s.debug)
+Generated x86-64 assembly: [build/hello_world.s](./build/hello_world.s)  
+Generated AArch64 assembly: [build/hello_world_arm.s](./build/hello_world_arm.s)  
+Commented assembly, using `--debug`: [build/hello_world_debug.s](./build/hello_world_debug.s)
 
 
 ## Build

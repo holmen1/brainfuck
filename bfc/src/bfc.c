@@ -3,14 +3,16 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <sys/utsname.h>
 #include "lexer.h"
 #include "ast.h"
 #include "parser.h"
 #include "ir.h"
 #include "codegen_asm.h"
+#include "codegen_arm64.h"
 
 static char *read_file(const char *filename, int *length);
-static int compile_assembly(const char *asm_file, const char *output_file, int debug);
+static int compile_assembly(const char *asm_file, const char *output_file, int debug, const char *backend);
 
 int main(int argc, char *argv[])
 {
@@ -21,6 +23,7 @@ int main(int argc, char *argv[])
         fprintf(stderr, "  --print-ast    Print AST and exit\n");
         fprintf(stderr, "  --print-ir     Print IR and exit\n");
         fprintf(stderr, "  --debug        Comment .s and compile with -g\n");
+        fprintf(stderr, "  --backend <x86|arm>  Target architecture (default: x86_64)\n");
         return 1;
     }
 
@@ -28,6 +31,7 @@ int main(int argc, char *argv[])
     int print_ast = 0;
     int print_ir = 0;
     int debug = 0;
+    const char *backend = "x86";  /* Default backend */
 
     /* Parse remaining arguments */
     for (int i = 2; i < argc; i++) {
@@ -37,6 +41,12 @@ int main(int argc, char *argv[])
             print_ir = 1;
         } else if (strcmp(argv[i], "--debug") == 0) {
             debug = 1;
+        } else if (strcmp(argv[i], "--backend") == 0 && i + 1 < argc) {
+            backend = argv[++i];
+            if (strcmp(backend, "x86") != 0 && strcmp(backend, "arm") != 0) {
+                fprintf(stderr, "Error: Invalid backend '%s'. Use 'x86' or 'arm'\n", backend);
+                return 1;
+            }
         } else {
             fprintf(stderr, "Error: Unknown option '%s'\n", argv[i]);
             return 1;
@@ -126,7 +136,7 @@ int main(int argc, char *argv[])
     snprintf(exe_file, sizeof(exe_file), "bin/%s", name);
 
     /* Phase 5: Code Generation */
-    printf("Generating x86-64 assembly...\n");
+    printf("Generating %s assembly...\n", backend);
     
     FILE *out = fopen(asm_file, "w");
     if (!out) {
@@ -138,7 +148,14 @@ int main(int argc, char *argv[])
         return 1;
     }
     
-    if (codegen_asm(ir, out, debug) != 0) {
+    int codegen_result;
+    if (strcmp(backend, "arm") == 0) {
+        codegen_result = codegen_arm64(ir, out, debug);
+    } else {
+        codegen_result = codegen_asm(ir, out, debug);
+    }
+    
+    if (codegen_result != 0) {
         fprintf(stderr, "Error: Code generation failed\n");
         fclose(out);
         ir_free(ir);
@@ -151,9 +168,35 @@ int main(int argc, char *argv[])
     fclose(out);
     printf("Assembly written to %s\n", asm_file);
     
+    /* Check if architecture matches backend */
+    struct utsname sys_info;
+    if (uname(&sys_info) == 0) {
+        const char *arch = sys_info.machine;
+        int arch_match = 0;
+        
+        if (strcmp(backend, "x86") == 0 && strcmp(arch, "x86_64") == 0) {
+            arch_match = 1;
+        } else if (strcmp(backend, "arm") == 0 && 
+                   (strcmp(arch, "aarch64") == 0 || strcmp(arch, "arm64") == 0)) {
+            arch_match = 1;
+        }
+        
+        if (!arch_match) {
+            printf("Warning: Backend '%s' does not match host architecture '%s'\n", backend, arch);
+            printf("Skipping compilation\n");
+            
+            /* Cleanup and exit successfully */
+            ir_free(ir);
+            ast_free(ast);
+            lexer_free(lexer);
+            free(source);
+            return 0;
+        }
+    }
+    
     /* Phase 6: Compile to executable */
     printf("Compiling to executable...\n");
-    if (compile_assembly(asm_file, exe_file, debug) != 0) {
+    if (compile_assembly(asm_file, exe_file, debug, backend) != 0) {
         fprintf(stderr, "Error: Compilation failed\n");
         ir_free(ir);
         ast_free(ast);
@@ -215,10 +258,22 @@ static char *read_file(const char *filename, int *length)
 }
 
 /**
- * Compile assembly file to executable using gcc
+ * Compile assembly file to executable using gcc or clang
  */
-static int compile_assembly(const char *asm_file, const char *output_file, int debug)
+static int compile_assembly(const char *asm_file, const char *output_file, int debug, const char *backend)
 {
+    const char *compiler;
+    const char *compiler_name;
+    
+    /* Select appropriate compiler */
+    if (strcmp(backend, "arm") == 0) {
+        compiler = "clang";
+        compiler_name = "clang";
+    } else {
+        compiler = "/usr/bin/gcc";
+        compiler_name = "gcc";
+    }
+    
     pid_t pid = fork();
     if (pid == -1) {
         perror("fork");
@@ -228,17 +283,17 @@ static int compile_assembly(const char *asm_file, const char *output_file, int d
     if (pid == 0) {
         /* Child process */
         if (debug)
-            execl("/usr/bin/gcc", "gcc", "-g", "-o", output_file, asm_file, NULL);
+            execlp(compiler, compiler_name, "-g", "-o", output_file, asm_file, NULL);
         else
-            execl("/usr/bin/gcc", "gcc", "-o", output_file, asm_file, NULL);
-        perror("execl");
+            execlp(compiler, compiler_name, "-o", output_file, asm_file, NULL);
+        perror("execlp");
         exit(EXIT_FAILURE);
     } else {
         /* Parent process */
         int status;
         waitpid(pid, &status, 0);
         if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
-            fprintf(stderr, "Error: gcc command failed\n");
+            fprintf(stderr, "Error: %s command failed\n", compiler_name);
             return -1;
         }
     }
