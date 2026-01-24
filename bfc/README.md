@@ -107,7 +107,7 @@ $ make clean    # Clean build artifacts
 ## Architecture
 
 ```
-Source.bf → Lexer → Parser → AST → Optimizer → IR → x86-64 Assembly → gcc → Executable
+Source.bf → Lexer → Parser → AST → Optimizer → IR → x86-64 or AArch64 Assembly → gcc → Executable
 ```
 
 **Optimizations**:

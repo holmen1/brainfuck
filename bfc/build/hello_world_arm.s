@@ -1,13 +1,14 @@
     .text
-    .globl main
+    .globl _main
     .align 2
-main:
+_main:
     // Prologue: set up stack frame
     stp x29, x30, [sp, #-16]!
     mov x29, sp
     stp x19, x20, [sp, #-16]!
     
-    sub sp, sp, #30000
+    mov x9, #30000
+    sub sp, sp, x9
     
     mov x19, sp
     mov x20, #0
@@ -15,7 +16,7 @@ main:
     mov x0, sp
     mov x1, #0
     mov x2, #30000
-    bl memset
+    bl _memset
     
 bf_program:
     ldrb w0, [x19, x20]
@@ -92,79 +93,80 @@ loop_0_end:
     
     add x20, x20, #2
     ldrb w0, [x19, x20]
-    bl putchar
+    bl _putchar
     
     add x20, x20, #1
     ldrb w0, [x19, x20]
     sub w0, w0, #3
     strb w0, [x19, x20]
     ldrb w0, [x19, x20]
-    bl putchar
+    bl _putchar
     
     ldrb w0, [x19, x20]
     add w0, w0, #7
     strb w0, [x19, x20]
     ldrb w0, [x19, x20]
-    bl putchar
+    bl _putchar
     
     ldrb w0, [x19, x20]
-    bl putchar
+    bl _putchar
     
     ldrb w0, [x19, x20]
     add w0, w0, #3
     strb w0, [x19, x20]
     ldrb w0, [x19, x20]
-    bl putchar
+    bl _putchar
     
     add x20, x20, #2
     ldrb w0, [x19, x20]
-    bl putchar
+    bl _putchar
     
     sub x20, x20, #1
     ldrb w0, [x19, x20]
     sub w0, w0, #1
     strb w0, [x19, x20]
     ldrb w0, [x19, x20]
-    bl putchar
+    bl _putchar
     
     sub x20, x20, #1
     ldrb w0, [x19, x20]
-    bl putchar
+    bl _putchar
     
     ldrb w0, [x19, x20]
     add w0, w0, #3
     strb w0, [x19, x20]
     ldrb w0, [x19, x20]
-    bl putchar
+    bl _putchar
     
     ldrb w0, [x19, x20]
     sub w0, w0, #6
     strb w0, [x19, x20]
     ldrb w0, [x19, x20]
-    bl putchar
+    bl _putchar
     
     ldrb w0, [x19, x20]
     sub w0, w0, #8
     strb w0, [x19, x20]
     ldrb w0, [x19, x20]
-    bl putchar
+    bl _putchar
     
     add x20, x20, #2
     ldrb w0, [x19, x20]
     add w0, w0, #1
     strb w0, [x19, x20]
     ldrb w0, [x19, x20]
-    bl putchar
+    bl _putchar
     
     add x20, x20, #1
     ldrb w0, [x19, x20]
     add w0, w0, #2
     strb w0, [x19, x20]
     ldrb w0, [x19, x20]
-    bl putchar
+    bl _putchar
     
 epilogue:
-    add sp, sp, #30000
+    mov x9, #30000
+    add sp, sp, x9
     ldp x19, x20, [sp], #16
     ldp x29, x30, [sp], #16
     mov w0, #0

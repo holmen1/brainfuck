@@ -15,9 +15,9 @@ int codegen_arm64(const IRProgram *program, FILE *output, int debug)
 {
     /* Assembly prologue */
     fprintf(output, "    .text\n");
-    fprintf(output, "    .globl main\n");
+    fprintf(output, "    .globl _main\n");
     fprintf(output, "    .align 2\n");
-    fprintf(output, "main:\n");
+    fprintf(output, "_main:\n");
     fprintf(output, "    // Prologue: set up stack frame\n");
     fprintf(output, "    stp x29, x30, [sp, #-16]!\n");
     fprintf(output, "    mov x29, sp\n");
@@ -26,7 +26,8 @@ int codegen_arm64(const IRProgram *program, FILE *output, int debug)
     
     /* Allocate BF memory on stack */
     if (debug) fprintf(output, "    // Allocate %d bytes for BF memory\n", BF_MEMORY_SIZE);
-    fprintf(output, "    sub sp, sp, #%d\n", BF_MEMORY_SIZE);
+    fprintf(output, "    mov x9, #%d\n", BF_MEMORY_SIZE);
+    fprintf(output, "    sub sp, sp, x9\n");
     fprintf(output, "    \n");
     
     /* Set up registers */
@@ -44,7 +45,7 @@ int codegen_arm64(const IRProgram *program, FILE *output, int debug)
     fprintf(output, "    mov x0, sp\n");            /* x0 = destination (memory base) */
     fprintf(output, "    mov x1, #0\n");            /* x1 = 0 (byte to fill) */
     fprintf(output, "    mov x2, #%d\n", BF_MEMORY_SIZE);     /* x2 = count */
-    fprintf(output, "    bl memset\n");             /* Call memset (x19, x20 preserved) */
+    fprintf(output, "    bl _memset\n");             /* Call memset (x19, x20 preserved) */
     fprintf(output, "    \n");
     
     /* Emit IR instructions */
@@ -80,14 +81,14 @@ int codegen_arm64(const IRProgram *program, FILE *output, int debug)
                 /* Output: putchar(*ptr) */
                 if (debug) fprintf(output, "    // IR_OUTPUT\n");
                 fprintf(output, "    ldrb w0, [x19, x20]\n");
-                fprintf(output, "    bl putchar\n");
+                fprintf(output, "    bl _putchar\n");
                 fprintf(output, "    \n");
                 break;
                 
             case IR_INPUT:
                 /* Input: *ptr = getchar() */
                 if (debug) fprintf(output, "    // IR_INPUT\n");
-                fprintf(output, "    bl getchar\n");
+                fprintf(output, "    bl _getchar\n");
                 fprintf(output, "    strb w0, [x19, x20]\n");
                 break;
                 
@@ -125,7 +126,8 @@ int codegen_arm64(const IRProgram *program, FILE *output, int debug)
     /* Epilogue: clean up and return */
     fprintf(output, "epilogue:\n");
     if (debug) fprintf(output, "    // restore stack and return 0\n");
-    fprintf(output, "    add sp, sp, #%d\n", BF_MEMORY_SIZE);
+    fprintf(output, "    mov x9, #%d\n", BF_MEMORY_SIZE);
+    fprintf(output, "    add sp, sp, x9\n");
     fprintf(output, "    ldp x19, x20, [sp], #16\n");
     fprintf(output, "    ldp x29, x30, [sp], #16\n");
     fprintf(output, "    mov w0, #0\n");
